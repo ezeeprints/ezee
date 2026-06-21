@@ -10,25 +10,37 @@ import Payments from '../components/dashboard/Payments';
 import Settings from '../components/dashboard/Settings';
 import Reminders from '../components/dashboard/Reminders';
 import DeskUI from '../components/dashboard/DeskUI';
+import ProgressUI from '../components/dashboard/ProgressUI';
+import EasterEggUI from '../components/dashboard/EasterEggUI';
+import WeatherUI from '../components/dashboard/WeatherUI';
 import { audio } from '../components/AudioEngine';
 
 export type CameraFocus = 'desk' | 'library' | 'utilities';
-export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer' | 'clock' | 'desk';
+export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer' | 'clock' | 'desk' | 'plant' | 'cat' | 'window';
 
 export default function StudentDashboard() {
   const [cameraFocus, setCameraFocus] = useState<CameraFocus>('desk');
   const [activeModal, setActiveModal] = useState<ActiveModal>('none');
   const [isNight, setIsNight] = useState(false);
+  const [weather, setWeather] = useState<'sunny' | 'rainy' | 'sunset' | 'midnight'>('sunny');
   const [greetings, setGreetings] = useState('Ready for another productive day?');
 
-  // Set greeting based on time of day / night mode
+  // Set greeting based on time of day, weather, and night mode
   useEffect(() => {
-    if (isNight) {
+    if (weather === 'rainy' || weather === 'midnight') {
+      setGreetings("Perfect weather for printing notes ☔");
+    } else if (isNight) {
       setGreetings("Still studying? I'll stay with you.");
     } else {
-      setGreetings("Ready for another productive day?");
+      // Alternate greetings
+      const greetingsList = [
+        "Ready for another productive day?",
+        "You've got this 📚"
+      ];
+      // Deterministic choice based on active status
+      setGreetings(greetingsList[0]);
     }
-  }, [isNight]);
+  }, [isNight, weather]);
 
   // Ambient sound (resume from auth if enabled)
   useEffect(() => {
@@ -91,6 +103,9 @@ export default function StudentDashboard() {
           onDrawerClick={() => handleObjectClick('desk', 'drawer')}
           onClockClick={() => handleObjectClick('desk', 'clock')}
           onDeskClick={() => handleObjectClick('desk', 'desk')} 
+          onPlantClick={() => handleObjectClick('desk', 'plant')}
+          onCatClick={() => handleObjectClick('desk', 'cat')}
+          onWindowClick={() => handleObjectClick('desk', 'window')}
         />
       </div>
 
@@ -142,6 +157,40 @@ export default function StudentDashboard() {
 
         {/* DESK / EZI UI */}
         {activeModal === 'desk' && <DeskUI onClose={closeModal} />}
+
+        {/* PLANT PROGRESS */}
+        {activeModal === 'plant' && <ProgressUI onClose={closeModal} />}
+
+        {/* CAT EASTER EGG */}
+        {activeModal === 'cat' && <EasterEggUI onClose={closeModal} />}
+
+        {/* WEATHER WINDOW */}
+        {activeModal === 'window' && (
+          <WeatherUI 
+            onClose={closeModal} 
+            isNight={isNight} 
+            setRoomWeather={(preset) => {
+              audio.playFeedbackClick();
+              if (preset === 'sunny') {
+                setIsNight(false);
+                setWeather('sunny');
+                audio.setWeatherState('day');
+              } else if (preset === 'rainy') {
+                setIsNight(false);
+                setWeather('rainy');
+                audio.setWeatherState('rain');
+              } else if (preset === 'sunset') {
+                setIsNight(true);
+                setWeather('sunset');
+                audio.setWeatherState('sunset');
+              } else if (preset === 'midnight') {
+                setIsNight(true);
+                setWeather('midnight');
+                audio.setWeatherState('rain');
+              }
+            }}
+          />
+        )}
 
       </div>
     </div>

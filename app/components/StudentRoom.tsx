@@ -14,6 +14,9 @@ interface StudentRoomProps {
   onWalletClick: () => void;
   onDrawerClick: () => void;
   onClockClick: () => void;
+  onPlantClick: () => void;
+  onCatClick: () => void;
+  onWindowClick: () => void;
 }
 
 export default function StudentRoom({
@@ -25,8 +28,12 @@ export default function StudentRoom({
   onDeskClick,
   onWalletClick,
   onDrawerClick,
-  onClockClick
+  onClockClick,
+  onPlantClick,
+  onCatClick,
+  onWindowClick
 }: StudentRoomProps) {
+
 
 
 
@@ -112,9 +119,12 @@ export default function StudentRoom({
 
         {/* Large Window */}
         <div 
+          className={styles.interactiveObject}
           style={{ position: 'absolute', top: '-10vh', width: '40vw', height: '40vh', zIndex: 1 }}
+          onClick={onWindowClick}
+          title="Weather"
         >
-          <svg width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none">
+          <svg width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none" style={{ overflow: 'hidden' }}>
             {/* Window frame */}
             <rect x="0" y="0" width="400" height="300" fill="none" stroke="#2A2928" strokeWidth="8" />
             <line x1="200" y1="0" x2="200" y2="300" stroke="#2A2928" strokeWidth="6" />
@@ -123,9 +133,17 @@ export default function StudentRoom({
             {/* Sky */}
             <rect x="4" y="4" width="392" height="292" fill={isNight ? "#1A1918" : "#A9B59D"} opacity="0.3" style={{ transition: 'fill 2s' }} />
             
-            {/* Curtains */}
-            <path d="M 0 0 Q 50 150 20 300 L 0 300 Z" fill="#EAE4DD" opacity="0.9" />
-            <path d="M 400 0 Q 350 150 380 300 L 400 300 Z" fill="#EAE4DD" opacity="0.9" />
+            {/* Glass Glare Reflections */}
+            <path d="M 0 0 L 150 0 L 0 200 Z" fill="#fff" opacity="0.08" pointerEvents="none" />
+            <path d="M 220 0 L 370 0 L 148 300 L -2 300 Z" fill="#fff" opacity="0.08" pointerEvents="none" />
+            
+            {/* Curtains (swaying gently) */}
+            <g style={{ transformOrigin: 'top left', animation: 'sway 6s infinite alternate ease-in-out' }}>
+              <path d="M 0 0 Q 50 150 20 300 L 0 300 Z" fill="#EAE4DD" opacity="0.9" />
+            </g>
+            <g style={{ transformOrigin: 'top right', animation: 'sway 8s infinite alternate-reverse ease-in-out' }}>
+              <path d="M 400 0 Q 350 150 380 300 L 400 300 Z" fill="#EAE4DD" opacity="0.9" />
+            </g>
           </svg>
         </div>
 
@@ -150,7 +168,12 @@ export default function StudentRoom({
         </div>
 
         {/* Plant */}
-        <div className={styles.interactiveObject} style={{ position: 'absolute', bottom: '20px', left: '10vw', width: '60px', height: '100px', zIndex: 12 }}>
+        <div 
+          className={styles.interactiveObject} 
+          style={{ position: 'absolute', bottom: '20px', left: '10vw', width: '60px', height: '100px', zIndex: 12 }}
+          onClick={onPlantClick}
+          title="Progress"
+        >
           <svg width="100%" height="100%" viewBox="0 0 100 150">
              <path d="M 30 150 L 70 150 L 80 100 L 20 100 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="4" />
              <path d="M 50 100 Q 20 70 10 40 Q 30 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
@@ -178,7 +201,12 @@ export default function StudentRoom({
         </div>
 
         {/* Tiny Cat */}
-        <div style={{ position: 'absolute', bottom: '20px', right: '40vw', width: '50px', height: '30px', zIndex: 12 }} className={styles.interactiveObject} title="Tiny Cat">
+        <div 
+          style={{ position: 'absolute', bottom: '20px', right: '40vw', width: '50px', height: '30px', zIndex: 12 }} 
+          className={styles.interactiveObject} 
+          title="Tiny Cat"
+          onClick={onCatClick}
+        >
            <svg width="100%" height="100%" viewBox="0 0 60 40">
              <ellipse cx="30" cy="25" rx="20" ry="12" fill="#2A2928" />
              <circle cx="15" cy="25" r="10" fill="#2A2928" />
