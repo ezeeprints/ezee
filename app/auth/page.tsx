@@ -6,10 +6,12 @@ import AuthRoom from '../components/AuthRoom';
 import EziCharacter from '../components/EziCharacter';
 import AuthForms from '../components/AuthForms';
 import { audio } from '../components/AudioEngine';
+import { useRouter } from 'next/navigation';
 
 export type AuthState = 'login' | 'signup' | 'otp' | 'forgot' | 'loading' | 'success' | 'error';
 
 export default function AuthPage() {
+  const router = useRouter();
   const [authState, setAuthState] = useState<AuthState>('login');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [zoomIn, setZoomIn] = useState(false);
@@ -34,10 +36,13 @@ export default function AuthPage() {
     if (authState === 'success') {
       const timer = setTimeout(() => {
         setZoomIn(true);
+        setTimeout(() => {
+          router.push('/student');
+        }, 1500);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [authState]);
+  }, [authState, router]);
 
   // Bind password text view toggle
   useEffect(() => {
@@ -194,20 +199,14 @@ export default function AuthPage() {
         aria-label="Toggle Desk Lamp"
       />
 
-      {/* Dashboard Mockup Overlay */}
+      {/* Dashboard Mockup Overlay (Now just a transition layer) */}
       {zoomIn && (
          <div style={{
            position: 'absolute', inset: 0, zIndex: 1000, 
-           background: 'rgba(250, 247, 241, 0.95)',
-           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-           animation: 'fadeIn 2s ease forwards'
+           background: 'rgba(250, 247, 241, 1)',
+           animation: 'fadeIn 1.5s ease forwards'
          }}>
            <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
-           <h1 className={styles.heading}>Student Dashboard</h1>
-           <p className={styles.subtitle}>Welcome to your deeper study nook.</p>
-           <button className={styles.primaryButton} onClick={() => { setAuthState('login'); setZoomIn(false); }} style={{ width: 'auto' }}>
-             Sign Out
-           </button>
          </div>
       )}
 

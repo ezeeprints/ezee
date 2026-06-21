@@ -1,0 +1,249 @@
+/* 
+  Student Dashboard "Living There" Styles
+  Inspired by Studio Ghibli, Muji, Animal Crossing
+*/
+
+.dashboardContainer {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--paper-cream, #FAF7F1);
+  color: var(--coffee-ink, #2A2928);
+  font-family: 'Cabinet Grotesk', 'Instrument Sans', 'Space Grotesk', sans-serif;
+  transition: background-color 2s ease, color 2s ease;
+}
+
+/* Night Mode Overrides */
+.nightMode {
+  background-color: #1A1918;
+  color: #EAE4DD;
+}
+
+/* 
+  The expansive room that holds all interactive SVG objects.
+  It's wider than the viewport to allow for camera panning.
+*/
+.roomWorld {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300vw; /* 3 screens wide */
+  height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  /* Smooth camera transition */
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: center center;
+}
+
+.roomFloor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 25vh;
+  background: rgba(42, 41, 40, 0.03);
+  border-top: 1px solid rgba(42, 41, 40, 0.08);
+  z-index: 0;
+}
+
+.nightMode .roomFloor {
+  background: rgba(234, 228, 221, 0.03);
+  border-top: 1px solid rgba(234, 228, 221, 0.08);
+}
+
+/* Interactive Object Wrapper */
+.interactiveObject {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+  z-index: 10;
+}
+
+.interactiveObject:hover {
+  transform: translateY(-5px) scale(1.02);
+  filter: drop-shadow(0 10px 15px rgba(42, 41, 40, 0.1));
+}
+
+.interactiveObject:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+/* Specific Positions for Objects in the 300vw Room */
+.areaLibrary {
+  position: absolute;
+  left: 20vw;
+  bottom: 25vh;
+  width: 30vw;
+  height: 60vh;
+}
+
+.areaDesk {
+  position: absolute;
+  left: 100vw; /* Center screen initially */
+  bottom: 25vh;
+  width: 100vw;
+  height: 70vh;
+  display: flex;
+  justify-content: center;
+}
+
+.areaUtilities {
+  position: absolute;
+  left: 220vw;
+  bottom: 25vh;
+  width: 50vw;
+  height: 50vh;
+}
+
+/* Ambient Animations */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes rise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-40px) scale(1.5); opacity: 0; }
+}
+
+@keyframes sway {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(3deg); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Dust particles */
+.dustParticle {
+  position: absolute;
+  background: rgba(250, 247, 241, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.nightMode .dustParticle {
+  background: rgba(234, 228, 221, 0.4);
+}
+
+/* UI Overlay / Modal (Tactile Paper) */
+.uiOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.uiOverlay.active {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.paperModal {
+  background: #FAF7F1;
+  padding: 4rem;
+  border-radius: 4px;
+  box-shadow: 
+    -5px 5px 20px rgba(42, 41, 40, 0.05),
+    0 20px 40px rgba(42, 41, 40, 0.1);
+  position: relative;
+  max-width: 600px;
+  width: 90%;
+  transform: translateY(20px);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.uiOverlay.active .paperModal {
+  transform: translateY(0);
+}
+
+/* Paper Details */
+.paperModal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+/* Torn Edge Effect on Modal */
+.paperModal::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: 
+    linear-gradient(135deg, transparent 25%, #FAF7F1 25%) -10px 0,
+    linear-gradient(225deg, transparent 25%, #FAF7F1 25%) -10px 0,
+    linear-gradient(315deg, transparent 25%, #FAF7F1 25%),
+    linear-gradient(45deg, transparent 25%, #FAF7F1 25%);
+  background-size: 20px 20px;
+  background-color: transparent;
+}
+
+/* Handwritten Header */
+.modalHeader {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 2.5rem;
+  color: #2A2928;
+  margin-bottom: 2rem;
+  border-bottom: 2px dashed rgba(42, 41, 40, 0.2);
+  padding-bottom: 1rem;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #7A6D8C;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.closeBtn:hover {
+  transform: scale(1.1) rotate(90deg);
+  color: #D48A70;
+}
+
+/* Buttons */
+.tactileBtn {
+  background-color: #A9B59D;
+  color: #FAF7F1;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-family: 'Space Grotesk', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #8A9680;
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tactileBtn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #8A9680;
+}

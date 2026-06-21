@@ -4,7 +4,7 @@ import React from 'react';
 import styles from '../auth/auth.module.css';
 
 interface EziProps {
-  state: 'login' | 'signup' | 'otp' | 'forgot' | 'loading' | 'success' | 'error';
+  state: 'login' | 'signup' | 'otp' | 'forgot' | 'loading' | 'success' | 'error' | 'dashboard';
   mousePos?: { x: number; y: number };
   focusedField?: string | null;
   passwordVisible?: boolean;
@@ -197,6 +197,14 @@ export default function EziCharacter({
               <g transform="translate(60, 140)">
                 <path d="M 0 10 Q 20 20 40 10 L 40 30 Q 20 40 0 30 Z" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
                 <path d="M 40 10 Q 60 20 80 10 L 80 30 Q 60 40 40 30 Z" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
+              </g>
+            )}
+
+            {!isPassword && state === 'dashboard' && (
+              // Sketching at desk
+              <g>
+                <path d="M 40 160 Q 50 180 80 180" fill="none" stroke="#2A2928" strokeWidth="16" strokeLinecap="round" style={{ animation: 'sway 1s infinite alternate' }} />
+                <path d="M 160 160 C 150 180, 140 190, 120 180" fill="none" stroke="#2A2928" strokeWidth="16" strokeLinecap="round" />
               </g>
             )}
 
