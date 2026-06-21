@@ -23,14 +23,24 @@ export default function StudentDashboard() {
   const [activeModal, setActiveModal] = useState<ActiveModal>('none');
   const [isNight, setIsNight] = useState(false);
   const [weather, setWeather] = useState<'sunny' | 'rainy' | 'sunset' | 'midnight'>('sunny');
+  const [greetings, setGreetings] = useState('Ready for another productive day?');
 
-  // Compute greetings dynamically during render instead of state to prevent cascading renders
-  let greetings = 'Ready for another productive day?';
-  if (weather === 'rainy' || weather === 'midnight') {
-    greetings = 'Perfect weather for printing notes ☔';
-  } else if (isNight) {
-    greetings = "Still studying? I'll stay with you.";
-  }
+  // Set greeting based on time of day, weather, and night mode
+  useEffect(() => {
+    if (weather === 'rainy' || weather === 'midnight') {
+      setGreetings("Perfect weather for printing notes ☔");
+    } else if (isNight) {
+      setGreetings("Still studying? I'll stay with you.");
+    } else {
+      // Alternate greetings
+      const greetingsList = [
+        "Ready for another productive day?",
+        "You've got this 📚"
+      ];
+      // Deterministic choice based on active status
+      setGreetings(greetingsList[0]);
+    }
+  }, [isNight, weather]);
 
   // Ambient sound (resume from auth if enabled)
   useEffect(() => {

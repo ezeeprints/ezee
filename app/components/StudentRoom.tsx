@@ -32,11 +32,47 @@ export default function StudentRoom({
   onPlantClick,
   onCatClick,
   onWindowClick
-}: StudentRoomProps) {
+}: StudentRoomProps) {  const [catState, setCatState] = React.useState<{
+    position: 'desk' | 'bookshelf' | 'printer' | 'hidden';
+    pose: 'sleeping' | 'stretching';
+  }>({ position: 'desk', pose: 'sleeping' });
 
+  React.useEffect(() => {
+    if (isNight) {
+      setCatState({ position: 'desk', pose: 'sleeping' });
+      return;
+    }
 
+    const positions: ('desk' | 'bookshelf' | 'printer' | 'hidden')[] = ['desk', 'bookshelf', 'printer', 'hidden'];
+    const poses: ('sleeping' | 'stretching')[] = ['sleeping', 'stretching'];
 
+    // Select randomly on client mount
+    const randomPos = positions[Math.floor(Math.random() * positions.length)];
+    const randomPose = poses[Math.floor(Math.random() * poses.length)];
+    setCatState({ position: randomPos, pose: randomPose });
 
+    const interval = setInterval(() => {
+      const nextPos = positions[Math.floor(Math.random() * positions.length)];
+      const nextPose = poses[Math.floor(Math.random() * poses.length)];
+      setCatState({ position: nextPos, pose: nextPose });
+    }, 45000);
+
+    return () => clearInterval(interval);
+  }, [isNight]);
+
+  const getCatStyle = () => {
+    switch (catState.position) {
+      case 'bookshelf':
+        return { position: 'absolute' as const, bottom: '155px', left: '25vw', width: '50px', height: '30px', zIndex: 12 };
+      case 'printer':
+        return { position: 'absolute' as const, bottom: '115px', right: '14vw', width: '50px', height: '30px', zIndex: 12 };
+      case 'hidden':
+        return { display: 'none' };
+      case 'desk':
+      default:
+        return { position: 'absolute' as const, bottom: '20px', right: '40vw', width: '50px', height: '30px', zIndex: 12 };
+    }
+  };
   return (
     <>
       {/* Ambient Outer Life */}
@@ -202,12 +238,12 @@ export default function StudentRoom({
 
         {/* Tiny Cat */}
         <div 
-          style={{ position: 'absolute', bottom: '20px', right: '40vw', width: '50px', height: '30px', zIndex: 12 }} 
-          className={styles.interactiveObject} 
+          style={getCatStyle()} 
+          className={`${styles.interactiveObject} ${catState.pose === 'stretching' ? styles.catStretching : ''}`} 
           title="Tiny Cat"
           onClick={onCatClick}
         >
-           <svg width="100%" height="100%" viewBox="0 0 60 40">
+           <svg width="100%" height="100%" viewBox="0 0 60 40" style={{ overflow: 'visible' }}>
              <ellipse cx="30" cy="25" rx="20" ry="12" fill="#2A2928" />
              <circle cx="15" cy="25" r="10" fill="#2A2928" />
              <polygon points="5,15 15,15 10,5" fill="#2A2928" />
