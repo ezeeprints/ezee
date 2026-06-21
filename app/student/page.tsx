@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './student.module.css';
-import StudentRoom from '../components/StudentRoom';
-import PrintStudio from '../components/dashboard/PrintStudio';
-import OrderHistory from '../components/dashboard/OrderHistory';
-import Notifications from '../components/dashboard/Notifications';
-import Payments from '../components/dashboard/Payments';
-import Settings from '../components/dashboard/Settings';
-import Reminders from '../components/dashboard/Reminders';
-import DeskUI from '../components/dashboard/DeskUI';
-import ProgressUI from '../components/dashboard/ProgressUI';
-import EasterEggUI from '../components/dashboard/EasterEggUI';
-import WeatherUI from '../components/dashboard/WeatherUI';
-import { audio } from '../components/AudioEngine';
+import StudentRoom from '@/app/components/StudentRoom';
+import PrintStudio from '@/app/components/dashboard/PrintStudio';
+import OrderHistory from '@/app/components/dashboard/OrderHistory';
+import Notifications from '@/app/components/dashboard/Notifications';
+import Payments from '@/app/components/dashboard/Payments';
+import Settings from '@/app/components/dashboard/Settings';
+import Reminders from '@/app/components/dashboard/Reminders';
+import DeskUI from '@/app/components/dashboard/DeskUI';
+import ProgressUI from '@/app/components/dashboard/ProgressUI';
+import EasterEggUI from '@/app/components/dashboard/EasterEggUI';
+import WeatherUI from '@/app/components/dashboard/WeatherUI';
+import { audio } from '@/app/components/AudioEngine';
 
 export type CameraFocus = 'desk' | 'library' | 'utilities';
 export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer' | 'clock' | 'desk' | 'plant' | 'cat' | 'window';
@@ -162,7 +162,7 @@ export default function StudentDashboard() {
           <WeatherUI 
             onClose={closeModal} 
             isNight={isNight} 
-            setRoomWeather={(preset) => {
+            setRoomWeather={(preset: 'sunny' | 'rainy' | 'sunset' | 'midnight') => {
               audio.playFeedbackClick();
               if (preset === 'sunny') {
                 setIsNight(false);
