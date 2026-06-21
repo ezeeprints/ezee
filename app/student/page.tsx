@@ -125,6 +125,38 @@ export default function StudentDashboard() {
         </button>
       )}
 
+      {/* Cozy room navigation tags */}
+      {activeModal === 'none' && (
+        <>
+          {(cameraFocus === 'desk' || cameraFocus === 'utilities') && (
+            <button 
+              className={styles.navTagLeft}
+              onClick={() => {
+                audio.playFeedbackClick();
+                setCameraFocus(cameraFocus === 'desk' ? 'library' : 'desk');
+              }}
+            >
+              <span>←</span>
+              <span>{cameraFocus === 'desk' ? 'Bookshelf' : 'Study Desk'}</span>
+            </button>
+          )}
+
+          {(cameraFocus === 'desk' || cameraFocus === 'library') && (
+            <button 
+              className={styles.navTagRight}
+              onClick={() => {
+                audio.playFeedbackClick();
+                setCameraFocus(cameraFocus === 'desk' ? 'utilities' : 'desk');
+              }}
+            >
+              <span>{cameraFocus === 'desk' ? 'Printer & Mailbox' : 'Study Desk'}</span>
+              <span>→</span>
+            </button>
+          )}
+        </>
+      )}
+
+
       {/* Tactile Modal UIs */}
       <div className={`${styles.uiOverlay} ${activeModal !== 'none' ? styles.active : ''}`}>
         
