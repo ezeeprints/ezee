@@ -1,3 +1,7 @@
+"use client";
+import React from "react";
+import { Reveal } from "./Reveal";
+
 export default function FeaturesSection() {
   return (
     <section
@@ -8,12 +12,11 @@ export default function FeaturesSection() {
         background: "linear-gradient(180deg,#EFD8BE 0%, #E7D6C2 22%, #EAE0D2 100%)",
       }}
     >
-      <div
+      <Reveal
         style={{
           textAlign: "center",
           maxWidth: 700,
           margin: "0 auto 64px",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         <span
@@ -41,7 +44,7 @@ export default function FeaturesSection() {
           <br />
           nothing you don&apos;t
         </h2>
-      </div>
+      </Reveal>
 
       <div
         style={{
@@ -53,10 +56,9 @@ export default function FeaturesSection() {
         }}
       >
         {/* Real-time tracking — big card */}
-        <div
+        <Reveal
           style={{
             gridColumn: "span 4",
-            animation: "riseIn .7s ease-out both",
           }}
         >
           <div
@@ -167,10 +169,10 @@ export default function FeaturesSection() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* One-tap payments */}
-        <div style={{ gridColumn: "span 2", animation: "riseIn .7s ease-out .05s both" }}>
+        <Reveal delay={0.05} style={{ gridColumn: "span 2" }}>
           <div
             style={{
               minHeight: 230,
@@ -201,10 +203,10 @@ export default function FeaturesSection() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Deep customisation */}
-        <div style={{ gridColumn: "span 2", animation: "riseIn .7s ease-out both" }}>
+        <Reveal delay={0} style={{ gridColumn: "span 2" }}>
           <div
             style={{
               minHeight: 210,
@@ -237,10 +239,10 @@ export default function FeaturesSection() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Gentle nudges */}
-        <div style={{ gridColumn: "span 2", animation: "riseIn .7s ease-out .05s both" }}>
+        <Reveal delay={0.05} style={{ gridColumn: "span 2" }}>
           <div
             style={{
               minHeight: 210,
@@ -271,10 +273,10 @@ export default function FeaturesSection() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Print history */}
-        <div style={{ gridColumn: "span 2", animation: "riseIn .7s ease-out .1s both" }}>
+        <Reveal delay={0.1} style={{ gridColumn: "span 2" }}>
           <div
             style={{
               position: "relative",
@@ -319,10 +321,10 @@ export default function FeaturesSection() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Queue-free pickup */}
-        <div style={{ gridColumn: "span 2", animation: "riseIn .7s ease-out .15s both" }}>
+        <Reveal delay={0.15} style={{ gridColumn: "span 2" }}>
           <div
             style={{
               minHeight: 210,
@@ -352,7 +354,7 @@ export default function FeaturesSection() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

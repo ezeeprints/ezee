@@ -1,3 +1,7 @@
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { Reveal } from "./Reveal";
+
 const steps = [
   {
     num: "01",
@@ -56,9 +60,38 @@ const steps = [
 ];
 
 export default function HowItWorksSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [eziPos, setEziPos] = useState({ x: 13.88, y: 9.21 }); // Default percentages based on M150 70
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current || !pathRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      let progress = (windowHeight - rect.top) / (windowHeight + rect.height);
+      progress = Math.max(0, Math.min(1, progress));
+      
+      const length = pathRef.current.getTotalLength();
+      const point = pathRef.current.getPointAtLength(progress * length);
+      
+      setEziPos({
+        x: (point.x / 1080) * 100,
+        y: (point.y / 760) * 100
+      });
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // setTimeout handles the case where path length calculation needs layout first
+    setTimeout(handleScroll, 100); 
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section
       id="how"
+      ref={sectionRef}
       style={{
         position: "relative",
         padding: "clamp(90px,12vw,150px) clamp(22px,6vw,110px)",
@@ -66,12 +99,11 @@ export default function HowItWorksSection() {
         overflow: "hidden",
       }}
     >
-      <div
+      <Reveal
         style={{
           textAlign: "center",
           maxWidth: 680,
           margin: "0 auto 70px",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         <span
@@ -100,7 +132,7 @@ export default function HowItWorksSection() {
         <p style={{ fontSize: 17, lineHeight: 1.6, color: "#5b554f", margin: 0 }}>
           Four small steps between you and a warm stack of freshly printed notes.
         </p>
-      </div>
+      </Reveal>
 
       <div style={{ position: "relative", maxWidth: 1080, margin: "0 auto" }}>
         {/* winding dashed path */}
@@ -116,6 +148,7 @@ export default function HowItWorksSection() {
           }}
         >
           <path
+            ref={pathRef}
             d="M150 70 C420 70 360 230 540 230 C720 230 660 430 360 430 C150 430 200 620 700 620"
             fill="none"
             stroke="#cbb8c4"
@@ -140,12 +173,12 @@ export default function HowItWorksSection() {
           }}
         >
           {steps.map((step, i) => (
-            <div
+            <Reveal
               key={i}
+              delay={i * 0.05}
               style={{
                 alignSelf: i % 2 === 0 ? "flex-start" : "flex-end",
                 maxWidth: 340,
-                animation: `riseIn .7s ease-out ${i * 0.05}s both`,
               }}
             >
               <div
@@ -199,18 +232,21 @@ export default function HowItWorksSection() {
                   {step.desc}
                 </p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
 
-        {/* Ezi walking along */}
+        {/* Ezi walking along the path */}
         <div
           style={{
             position: "absolute",
-            right: "6%",
-            bottom: "-6%",
+            left: `calc(${eziPos.x}% - 60px)`,
+            top: `calc(${eziPos.y}% - 140px)`,
             width: 120,
-            animation: "bobwalk 3s ease-in-out infinite",
+            animation: "bobwalk 1.2s ease-in-out infinite", // walks faster
+            transition: "left 0.1s linear, top 0.1s linear",
+            pointerEvents: "none",
+            zIndex: 10,
           }}
         >
           <svg

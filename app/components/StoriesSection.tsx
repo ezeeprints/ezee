@@ -1,3 +1,5 @@
+"use client";
+import { Reveal } from "./Reveal";
 const EziSVG = ({ beretColor }: { beretColor: string }) => (
   <svg width="70" height="80" viewBox="0 0 140 170">
     <path
@@ -82,12 +84,11 @@ export default function StoriesSection() {
         overflow: "hidden",
       }}
     >
-      <div
+      <Reveal
         style={{
           textAlign: "center",
           maxWidth: 680,
           margin: "0 auto 70px",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         <span
@@ -116,7 +117,7 @@ export default function StoriesSection() {
         <p style={{ fontSize: 17, lineHeight: 1.6, color: "#5b554f", margin: 0 }}>
           Little memories left behind by students who found their corner.
         </p>
-      </div>
+      </Reveal>
 
       <div
         style={{
@@ -132,11 +133,9 @@ export default function StoriesSection() {
         {testimonials.map((t, i) => {
           if (t.type === "sticky") {
             return (
-              <div
+              <Reveal
                 key={i}
-                style={{
-                  animation: `riseIn .7s ease-out ${t.delay}s both`,
-                }}
+                delay={t.delay}
               >
                 <div
                   style={{
@@ -181,15 +180,15 @@ export default function StoriesSection() {
                   </p>
                   <p style={{ fontSize: 13, color: "#7a6038", margin: 0 }}>{t.author}</p>
                 </div>
-              </div>
+              </Reveal>
             );
           }
 
           return (
-            <div
+            <Reveal
               key={i}
+              delay={t.delay}
               style={{
-                animation: `riseIn .7s ease-out ${t.delay}s both`,
                 marginTop: (t as any).marginTop ?? 0,
               }}
             >
@@ -252,7 +251,7 @@ export default function StoriesSection() {
                   {t.author}
                 </p>
               </div>
-            </div>
+            </Reveal>
           );
         })}
       </div>

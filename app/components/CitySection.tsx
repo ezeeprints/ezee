@@ -1,3 +1,5 @@
+"use client";
+import { Reveal } from "./Reveal";
 interface Shop {
   name: string;
   rating: string;
@@ -48,11 +50,11 @@ const shops: Shop[] = [
 
 function ShopCard({ shop, delay }: { shop: Shop; delay: number }) {
   return (
-    <div
+    <Reveal
+      delay={delay}
       style={{
         flex: "1 1 290px",
         maxWidth: 330,
-        animation: `riseIn .7s ease-out ${delay}s both`,
       }}
     >
       <div
@@ -190,7 +192,7 @@ function ShopCard({ shop, delay }: { shop: Shop; delay: number }) {
           </div>
         </div>
       </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -236,13 +238,12 @@ export default function CitySection() {
         }}
       />
 
-      <div
+      <Reveal
         style={{
           position: "relative",
           textAlign: "center",
           maxWidth: 680,
           margin: "0 auto 56px",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         <span
@@ -271,7 +272,7 @@ export default function CitySection() {
         <p style={{ fontSize: 17, lineHeight: 1.6, color: "#6a5a48", margin: 0 }}>
           Little print shops tucked all around town — each one a tiny storefront with its own warmth.
         </p>
-      </div>
+      </Reveal>
 
       {/* Shop cards */}
       <div

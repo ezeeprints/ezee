@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Reveal } from "./Reveal";
 
 interface FaqItem {
   q: string;
@@ -50,13 +51,13 @@ function FaqItem({ item, delay }: { item: FaqItem; delay: number }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
+    <Reveal
+      delay={delay}
       style={{
         background: item.bg,
         color: item.textColor,
         borderRadius: item.radius,
         boxShadow: "0 16px 30px -16px rgba(0,0,0,.5)",
-        animation: `riseIn .7s ease-out ${delay}s both`,
       }}
     >
       <div
@@ -115,7 +116,7 @@ function FaqItem({ item, delay }: { item: FaqItem; delay: number }) {
           {item.a}
         </p>
       </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -192,13 +193,12 @@ export default function FaqSection() {
         />
       ))}
 
-      <div
+      <Reveal
         style={{
           position: "relative",
           textAlign: "center",
           maxWidth: 680,
           margin: "0 auto 60px",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         <span
@@ -228,7 +228,7 @@ export default function FaqSection() {
         <p style={{ fontSize: 17, lineHeight: 1.6, color: "#b8b0c2", margin: 0 }}>
           Tap a sticky note to read the answer.
         </p>
-      </div>
+      </Reveal>
 
       <div
         style={{

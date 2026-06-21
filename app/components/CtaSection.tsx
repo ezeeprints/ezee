@@ -1,3 +1,8 @@
+"use client";
+
+import React from "react";
+import { Reveal } from "./Reveal";
+
 export default function CtaSection() {
   return (
     <section
@@ -52,13 +57,12 @@ export default function CtaSection() {
         }}
       />
 
-      <div
+      <Reveal
         style={{
           position: "relative",
           zIndex: 2,
           maxWidth: 680,
           margin: "0 auto",
-          animation: "riseIn .7s ease-out both",
         }}
       >
         {/* Ezi waving */}
@@ -212,7 +216,7 @@ export default function CtaSection() {
           <span>·</span>
           <span>Made in the study nook, one warm print at a time.</span>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

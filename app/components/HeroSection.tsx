@@ -1,3 +1,8 @@
+"use client";
+
+import React from "react";
+import { Reveal } from "./Reveal";
+
 export default function HeroSection() {
   return (
     <section
@@ -69,11 +74,10 @@ export default function HeroSection() {
         }}
       >
         {/* Hero Copy */}
-        <div
+        <Reveal
           style={{
             flex: "1 1 420px",
             maxWidth: 560,
-            animation: "riseIn .7s ease-out both",
           }}
         >
           {/* Badge */}
@@ -214,14 +218,15 @@ export default function HeroSection() {
               Meet Ezi
             </a>
           </div>
-        </div>
+        </Reveal>
 
         {/* Hero Illustration */}
-        <div
+        <Reveal
+          delay={0.15}
+          duration="0.8s"
           style={{
             flex: "1 1 440px",
             maxWidth: 560,
-            animation: "riseIn .8s ease-out .15s both",
           }}
         >
           <div
@@ -354,7 +359,7 @@ export default function HeroSection() {
               </g>
             </svg>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {/* scroll cue */}
