@@ -142,7 +142,7 @@ export default function FeaturesSection() {
                   margin: "0 0 8px",
                 }}
               >
-                Real-time tracking
+                Ambient preparation
               </h3>
               <p
                 style={{
@@ -153,19 +153,15 @@ export default function FeaturesSection() {
                   margin: "0 0 20px",
                 }}
               >
-                Watch your job move from <em>queued</em> to <em>printing</em> to{" "}
-                <em>ready</em>, live — like a tiny progress story.
+                Follow the journey of your notes from a quiet draft to a beautifully bound keepsake resting on the shelf.
               </p>
-              {/* progress bar */}
-              <div
-                style={{ display: "flex", alignItems: "center", gap: 0, maxWidth: 360 }}
-              >
-                <div style={{ flex: 1, height: 6, borderRadius: 4, background: "#A9B59D" }} />
-                <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#A9B59D", margin: "0 -2px", zIndex: 2 }} />
-                <div style={{ flex: 1, height: 6, borderRadius: 4, background: "#A9B59D" }} />
-                <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#D48A70", margin: "0 -2px", zIndex: 2, boxShadow: "0 0 0 5px rgba(212,138,112,.25)" }} />
-                <div style={{ flex: 1, height: 6, borderRadius: 4, background: "#e2d9cd" }} />
-                <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#e2d9cd", margin: "0 -2px", zIndex: 2 }} />
+              {/* Ambient preparation icons */}
+              <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', opacity: 0.85 }}>
+                <span style={{ fontSize: '1.5rem' }}>✈️</span>
+                <span style={{ fontSize: '0.9rem', color: '#7A6D8C', fontFamily: 'Space Grotesk' }}>→</span>
+                <span style={{ fontSize: '1.5rem' }}>🖨️</span>
+                <span style={{ fontSize: '0.9rem', color: '#7A6D8C', fontFamily: 'Space Grotesk' }}>→</span>
+                <span style={{ fontSize: '1.5rem' }}>🌿</span>
               </div>
             </div>
           </div>
