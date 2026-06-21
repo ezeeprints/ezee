@@ -14,15 +14,15 @@ interface MockOrder {
   pages: number;
   format: 'Color' | 'B&W';
   price: string;
-  status: 'Picked up ✓' | 'On its way ✈' | 'Back home 📦';
+  status: 'With you 🎒' | 'Resting on shelf 🌿';
 }
 
 export default function OrderHistory({ onClose }: OrderHistoryProps) {
   const orders: MockOrder[] = [
-    { id: 'EZ-8812', date: '12 May 2026', filename: 'Semester_1_Calculus_Notes.pdf', pages: 42, format: 'Color', price: '$12.50', status: 'Picked up ✓' },
-    { id: 'EZ-8904', date: '02 Jun 2026', filename: 'History_Thesis_Final_Draft.pdf', pages: 110, format: 'B&W', price: '$18.90', status: 'Picked up ✓' },
-    { id: 'EZ-9011', date: '15 Jun 2026', filename: 'Resume_2026.pdf', pages: 2, format: 'Color', price: '$2.00', status: 'Picked up ✓' },
-    { id: 'EZ-9112', date: '20 Jun 2026', filename: 'Chemistry_Lab_Report_4.pdf', pages: 15, format: 'B&W', price: '$3.50', status: 'On its way ✈' }
+    { id: '1', date: '12 May 2026', filename: 'Semester_1_Calculus_Notes.pdf', pages: 42, format: 'Color', price: '$12.50', status: 'With you 🎒' },
+    { id: '2', date: '02 Jun 2026', filename: 'History_Thesis_Final_Draft.pdf', pages: 110, format: 'B&W', price: '$18.90', status: 'With you 🎒' },
+    { id: '3', date: '15 Jun 2026', filename: 'Resume_2026.pdf', pages: 2, format: 'Color', price: '$2.00', status: 'With you 🎒' },
+    { id: '4', date: '20 Jun 2026', filename: 'Chemistry_Lab_Report_4.pdf', pages: 15, format: 'B&W', price: '$3.50', status: 'Resting on shelf 🌿' }
   ];
 
   return (
@@ -67,11 +67,11 @@ export default function OrderHistory({ onClose }: OrderHistoryProps) {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(42, 41, 40, 0.1)' }}>
-                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C' }}>DATE DUE/REC</th>
-                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C' }}>DOCUMENT NAME</th>
-                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'center' }}>PAGES / TYPE</th>
-                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'right' }}>FEE</th>
-                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'center' }}>STATUS</th>
+                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C' }}>DATE</th>
+                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C' }}>THE NOTES</th>
+                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'center' }}>PAGES</th>
+                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'right' }}>EXCHANGE 🪙</th>
+                <th style={{ fontFamily: 'Space Grotesk', fontWeight: 'bold', fontSize: '0.9rem', padding: '0.8rem 0.5rem', color: '#7A6D8C', textAlign: 'center' }}>WHERE THEY ARE</th>
               </tr>
             </thead>
             <tbody>
@@ -101,9 +101,9 @@ export default function OrderHistory({ onClose }: OrderHistoryProps) {
                       textTransform: 'uppercase',
                       padding: '0.2rem 0.5rem',
                       borderRadius: '3px',
-                      backgroundColor: order.status === 'Picked up ✓' ? 'rgba(169, 181, 157, 0.15)' : order.status === 'On its way ✈' ? 'rgba(212, 138, 112, 0.15)' : 'rgba(122, 109, 140, 0.15)',
-                      color: order.status === 'Picked up ✓' ? '#A9B59D' : order.status === 'On its way ✈' ? '#D48A70' : '#7A6D8C',
-                      border: `1px solid ${order.status === 'Picked up ✓' ? 'rgba(169, 181, 157, 0.3)' : order.status === 'On its way ✈' ? 'rgba(212, 138, 112, 0.3)' : 'rgba(122, 109, 140, 0.3)'}`,
+                      backgroundColor: order.status === 'With you 🎒' ? 'rgba(169, 181, 157, 0.15)' : 'rgba(212, 138, 112, 0.15)',
+                      color: order.status === 'With you 🎒' ? '#A9B59D' : '#D48A70',
+                      border: `1px solid ${order.status === 'With you 🎒' ? 'rgba(169, 181, 157, 0.3)' : 'rgba(212, 138, 112, 0.3)'}`,
                       transform: idx % 2 === 0 ? 'rotate(-2deg)' : 'rotate(1deg)'
                     }}>
                       {order.status}
