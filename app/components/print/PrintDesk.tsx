@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import styles from './print.module.css';
 import EziPrinter from './EziPrinter';
 import DocumentSheet, { detectDocType, DocumentType } from './DocumentSheet';
@@ -9,8 +9,10 @@ import PrintCityShops, { SHOPS } from './PrintCityShops';
 import SacredPrinter from './SacredPrinter';
 import PrintTicket from './PrintTicket';
 import SignatureMoment from './SignatureMoment';
+import PaymentDesk from './PaymentDesk';
+import { useMemorySystem } from './useMemorySystem';
 
-type Phase = 'upload' | 'settings' | 'shop' | 'printing' | 'ticket' | 'signature' | 'done';
+type Phase = 'upload' | 'settings' | 'shop' | 'payment' | 'printing' | 'ticket' | 'signature' | 'done';
 
 interface PrintDeskProps {
   onClose: () => void;
@@ -115,7 +117,116 @@ function DeskLamp({ isNight }: { isNight: boolean }) {
   );
 }
 
+// Memory visuals: Books, Mugs, Clock, Lanterns, Sticky Notes
+function MemoryVisuals({ isNight, visits, orders, isFestival, isExamSeason, totalPages }: { isNight: boolean, visits: number, orders: number, isFestival: boolean, isExamSeason: boolean, totalPages: number }) {
+  const booksCount = Math.min(1 + Math.floor(totalPages / 50), 6);
+  const mugsCount = Math.min(1 + Math.floor(visits / 3), 3);
+  const plantScale = Math.min(1 + (orders * 0.05), 1.3);
 
+  // Calculate clock hands
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  
+  const hourAngle = (hours % 12) * 30 + (minutes / 60) * 30;
+  const minuteAngle = minutes * 6 + (seconds / 60) * 6;
+  const secondAngle = seconds * 6;
+
+  return (
+    <>
+      {/* Ticking Clock */}
+      <div style={{ position: 'absolute', top: '1.5rem', left: '16rem', pointerEvents: 'none', zIndex: 0 }}>
+        <svg width="40" height="40" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill={isNight ? '#252320' : '#FAF7F1'} stroke="rgba(42,41,40,0.2)" strokeWidth="2" />
+          <circle cx="20" cy="20" r="2" fill="#D48A70" />
+          {/* Hour hand */}
+          <line x1="20" y1="20" x2="20" y2="10" stroke="#2A2928" strokeWidth="2" strokeLinecap="round" transform={`rotate(${hourAngle} 20 20)`} />
+          {/* Minute hand */}
+          <line x1="20" y1="20" x2="20" y2="6" stroke="#2A2928" strokeWidth="1.5" strokeLinecap="round" transform={`rotate(${minuteAngle} 20 20)`} />
+          {/* Second hand */}
+          <line x1="20" y1="20" x2="20" y2="4" stroke="#D48A70" strokeWidth="1" strokeLinecap="round" transform={`rotate(${secondAngle} 20 20)`} />
+        </svg>
+      </div>
+
+      {/* Stack of books (based on totalPages) */}
+      <div style={{ position: 'absolute', top: '2rem', right: '12rem', pointerEvents: 'none', zIndex: 0 }}>
+        <svg width="80" height={40 + booksCount * 12} viewBox={`0 0 80 ${40 + booksCount * 12}`}>
+          {Array.from({ length: booksCount }).map((_, i) => {
+            const colors = ['#A9B59D', '#7A6D8C', '#D48A70', '#8B6340', '#C4956A', '#2A2928'];
+            const c = colors[i % colors.length];
+            const y = (booksCount - i - 1) * 10;
+            return (
+              <g key={i} transform={`translate(${i % 2 === 0 ? 0 : 4}, ${y + 20}) rotate(${i % 2 === 0 ? -1 : 1})`}>
+                {/* Book spine */}
+                <rect x="0" y="0" width="70" height="12" rx="2" fill={c} stroke="rgba(42,41,40,0.15)" strokeWidth="1" />
+                {/* Pages edge */}
+                <rect x="2" y="1" width="66" height="10" fill="rgba(255,255,255,0.1)" />
+                {/* Decoration */}
+                <line x1="10" y1="2" x2="10" y2="10" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <line x1="60" y1="2" x2="60" y2="10" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Coffee Mugs (based on visits) */}
+      <div style={{ position: 'absolute', bottom: '2rem', left: '16rem', pointerEvents: 'none', zIndex: 0 }}>
+        {Array.from({ length: mugsCount }).map((_, i) => (
+          <svg key={i} width="40" height="40" viewBox="0 0 50 60" style={{ position: 'absolute', left: `${i * 25}px`, bottom: `${i * 5}px`, transform: `rotate(${i * 15 - 10}deg)` }}>
+            <path d="M 5 20 L 5 46 Q 5 54 25 54 Q 45 54 45 46 L 45 20 Z" fill="#EAE4DD" stroke="rgba(42,41,40,0.2)" strokeWidth="1.5" />
+            <path d="M 45 28 Q 56 28 56 36 Q 56 44 45 44" fill="none" stroke="rgba(42,41,40,0.2)" strokeWidth="1.5" />
+            <ellipse cx="25" cy="21" rx="20" ry="5" fill={i === 0 ? "#C4956A" : "rgba(42,41,40,0.1)"} />
+          </svg>
+        ))}
+      </div>
+
+      {/* Exam Season Sticky Notes */}
+      {isExamSeason && (
+        <>
+          <div style={{ position: 'absolute', top: '30%', left: '4%', transform: 'rotate(-12deg)', zIndex: 0 }}>
+            <svg width="40" height="40"><rect width="40" height="40" fill="#F4D03F" opacity="0.9" filter="drop-shadow(2px 2px 2px rgba(0,0,0,0.1))" /><line x1="5" y1="10" x2="30" y2="10" stroke="#2A2928" strokeWidth="1.5" opacity="0.5" /><line x1="5" y1="20" x2="25" y2="20" stroke="#2A2928" strokeWidth="1.5" opacity="0.5" /></svg>
+          </div>
+          <div style={{ position: 'absolute', bottom: '15%', right: '8%', transform: 'rotate(8deg)', zIndex: 0 }}>
+            <svg width="40" height="40"><rect width="40" height="40" fill="#A9B59D" opacity="0.9" filter="drop-shadow(2px 2px 2px rgba(0,0,0,0.1))" /><line x1="5" y1="15" x2="35" y2="15" stroke="#2A2928" strokeWidth="1.5" opacity="0.5" /></svg>
+          </div>
+        </>
+      )}
+
+      {/* Festival Lanterns */}
+      {isFestival && (
+        <div style={{ position: 'absolute', top: '0', right: '2rem', zIndex: 0 }}>
+          <svg width="120" height="40" viewBox="0 0 120 40">
+            <path d="M 0 5 Q 60 20 120 5" fill="none" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+            {[20, 60, 100].map((x, i) => (
+              <g key={i} transform={`translate(${x}, ${7 + (i === 1 ? 5 : 0)})`}>
+                <line x1="0" y1="0" x2="0" y2="5" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+                <rect x="-8" y="5" width="16" height="20" rx="2" fill="#D48A70" />
+                <rect x="-8" y="5" width="16" height="3" fill="#A87A51" />
+                <rect x="-8" y="22" width="16" height="3" fill="#A87A51" />
+                <circle cx="0" cy="15" r="4" fill="rgba(244,208,63,0.8)" />
+              </g>
+            ))}
+          </svg>
+        </div>
+      )}
+
+      {/* Tiny growing plant */}
+      <div style={{ position: 'absolute', top: '10rem', left: '2rem', transform: `scale(${plantScale})`, transformOrigin: 'bottom center', zIndex: 0 }}>
+        <svg width="40" height="60" viewBox="0 0 40 60">
+          <path d="M 20 60 L 20 30" stroke="#8BA382" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 20 45 Q 12 40 10 32" stroke="#8BA382" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          <path d="M 20 38 Q 28 32 30 24" stroke="#8BA382" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          <ellipse cx="10" cy="32" rx="6" ry="10" fill="#A9B59D" transform="rotate(-30 10 32)" />
+          <ellipse cx="30" cy="24" rx="6" ry="10" fill="#A9B59D" transform="rotate(30 30 24)" />
+          <ellipse cx="20" cy="20" rx="8" ry="12" fill="#A9B59D" />
+          <rect x="12" y="52" width="16" height="8" rx="1" fill="#C4956A" />
+        </svg>
+      </div>
+    </>
+  );
+}
 
 export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) {
   const [phase, setPhase] = useState<Phase>('upload');
@@ -136,12 +247,13 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
   const eziState = getEziState(isNight);
   const [orderNum] = useState(() => Math.floor(2000 + Math.random() * 800));
 
-  // Track visits for memory system
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const v = parseInt(localStorage.getItem('ezee_print_visits') || '0', 10);
-      localStorage.setItem('ezee_print_visits', String(v + 1));
-    }
+  const { memory, trackOrder } = useMemorySystem();
+
+  // Clock tick trigger to re-render MemoryVisuals every second
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleFile = useCallback((file: File) => {
@@ -183,11 +295,12 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
             {phase === 'upload' ? 'The Desk' :
              phase === 'settings' ? 'Preparing' :
              phase === 'shop' ? 'Choose Your Shop' :
+             phase === 'payment' ? 'Payment' :
              phase === 'printing' ? 'Printing…' :
              phase === 'ticket' ? 'It’s Ready' :
              phase === 'signature' ? 'On Its Way' : 'Done'}
           </span>
-          {phase !== 'upload' && phase !== 'printing' && phase !== 'ticket' && phase !== 'signature' && phase !== 'done' && (
+          {phase !== 'upload' && phase !== 'printing' && phase !== 'payment' && phase !== 'ticket' && phase !== 'signature' && phase !== 'done' && (
             <button
               onClick={() => setPhase(p => p === 'shop' ? 'settings' : 'upload')}
               style={{ background: 'none', border: 'none', fontFamily: 'Space Grotesk', fontSize: '0.8rem', color: '#7A6D8C', cursor: 'pointer', opacity: 0.7 }}
@@ -209,12 +322,27 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
         />
       )}
 
+      {/* Payment Drawer phase — full overlay */}
+      {phase === 'payment' && (
+        <PaymentDesk
+          pageCount={pageCount}
+          copies={copies}
+          colorMode={colorMode}
+          isNight={isNight}
+          onPay={() => setPhase('printing')}
+          onBack={() => setPhase('shop')}
+        />
+      )}
+
       {/* Signature moment — full overlay */}
       {(phase === 'signature' || phase === 'done') && (
         <SignatureMoment
           shopName={shop.name}
           isNight={isNight}
-          onComplete={() => setPhase('done')}
+          onComplete={() => {
+            trackOrder(pageCount, copies);
+            setPhase('done');
+          }}
         />
       )}
 
@@ -224,6 +352,7 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
           <DustLayer />
           <AmbientWindow isNight={isNight} />
           <DeskLamp isNight={isNight} />
+          <MemoryVisuals isNight={isNight} {...memory} totalPages={memory.totalPrintedPages} />
 
           {/* Cloud shadow drifting */}
           <div className={styles.cloudShadow} />
@@ -361,10 +490,10 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
                   {canSendToPrint && (
                     <button
                       className={styles.sendBtn}
-                      onClick={() => setPhase('printing')}
+                      onClick={() => setPhase('payment')}
                       style={{ marginTop: 'auto', alignSelf: 'stretch', justifyContent: 'center' }}
                     >
-                      Send to Printer →
+                      Proceed to Payment →
                     </button>
                   )}
                 </>
