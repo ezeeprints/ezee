@@ -247,3 +247,108 @@
   transform: translateY(4px);
   box-shadow: 0 0 0 #8A9680;
 }
+
+/* --- Phase 2: Micro-interactions and Ambient Life --- */
+
+/* Birds flying outside */
+.bird {
+  position: absolute;
+  width: 20px;
+  height: 10px;
+  background: transparent;
+  border-top: 3px solid rgba(42, 41, 40, 0.4);
+  border-radius: 50%;
+  animation: flyRight 15s linear infinite;
+  opacity: 0.6;
+}
+.bird::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 3px solid rgba(42, 41, 40, 0.4);
+  border-radius: 50%;
+  left: 10px;
+}
+
+@keyframes flyRight {
+  0% { transform: translateX(-50vw) translateY(20vh) scale(0.5); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateX(150vw) translateY(0vh) scale(0.8); opacity: 0; }
+}
+
+/* Shooting Star */
+.shootingStar {
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.8), transparent);
+  transform: rotate(-45deg);
+  animation: shoot 8s linear infinite;
+  opacity: 0;
+}
+
+@keyframes shoot {
+  0% { transform: translate(100vw, -20vh) rotate(-45deg); opacity: 1; width: 100px; }
+  5% { transform: translate(0vw, 80vh) rotate(-45deg); opacity: 0; width: 0px; }
+  100% { opacity: 0; }
+}
+
+/* Paper Airplane */
+.paperAirplane {
+  position: absolute;
+  animation: floatAirplane 12s ease-in-out infinite;
+  z-index: 20;
+}
+
+@keyframes floatAirplane {
+  0% { transform: translate(-20vw, 50vh) rotate(15deg); }
+  25% { transform: translate(30vw, 40vh) rotate(5deg); }
+  50% { transform: translate(80vw, 45vh) rotate(20deg); }
+  75% { transform: translate(130vw, 35vh) rotate(10deg); }
+  100% { transform: translate(180vw, 50vh) rotate(15deg); }
+}
+
+/* Micro-interactions */
+.squish:active {
+  transform: scale(0.95, 1.05);
+}
+
+.wiggle:hover {
+  animation: wiggleAnim 0.3s ease-in-out;
+}
+
+@keyframes wiggleAnim {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.curlCorner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 20px 20px;
+  border-color: transparent transparent rgba(0,0,0,0.05) rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.curlContainer:hover .curlCorner {
+  border-width: 0 0 30px 30px;
+  box-shadow: -5px -5px 10px rgba(0,0,0,0.1);
+}
+
+/* Clock Ticking */
+.clockTick {
+  animation: tickTock 1s steps(1) infinite;
+}
+
+@keyframes tickTock {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(6deg); }
+}
+

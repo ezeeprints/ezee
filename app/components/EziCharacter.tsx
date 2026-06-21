@@ -8,13 +8,15 @@ interface EziProps {
   mousePos?: { x: number; y: number };
   focusedField?: string | null;
   passwordVisible?: boolean;
+  isNight?: boolean;
 }
 
 export default function EziCharacter({ 
   state, 
   mousePos = { x: 0, y: 0 }, 
   focusedField = null, 
-  passwordVisible = false 
+  passwordVisible = false,
+  isNight = false
 }: EziProps) {
   const isPassword = focusedField === 'password';
   const showPeeking = isPassword && passwordVisible;
@@ -111,23 +113,43 @@ export default function EziCharacter({
              <path d="M 97 125 Q 100 128 103 125" stroke="#2A2928" strokeWidth="2.5" fill="none" strokeLinecap="round" />
           )}
 
-          {/* Scarf (Dusty Plum) */}
-          <path d="M 60 145 C 80 160, 120 160, 140 145 C 145 155, 135 170, 100 175 C 65 170, 55 155, 60 145 Z" fill="#7A6D8C" />
-          <path d="M 125 155 Q 135 180 120 195 Q 110 180 125 155 Z" fill="#7A6D8C" />
+          {/* Clothing */}
+          {isNight ? (
+            // Pajamas & Sleeping Cap
+            <g>
+              {/* Pajama Shirt (Striped) */}
+              <path d="M 50 140 C 80 150, 120 150, 150 140 C 160 170, 140 210, 100 210 C 60 210, 40 170, 50 140 Z" fill="#EAE4DD" />
+              <path d="M 60 145 L 70 205 M 90 150 L 90 210 M 110 150 L 110 210 M 130 145 L 120 205" stroke="#7A6D8C" strokeWidth="4" />
+              
+              {/* Sleeping Cap */}
+              <g transform="translate(0, -5)">
+                <path d="M 60 45 C 80 15, 130 15, 140 45 C 160 70, 170 110, 180 120 C 185 125, 185 135, 175 135 C 165 135, 160 120, 150 100 C 140 70, 110 40, 80 50 Z" fill="#7A6D8C" />
+                <ellipse cx="100" cy="45" rx="40" ry="10" fill="#EAE4DD" />
+                <circle cx="180" cy="128" r="8" fill="#EAE4DD" />
+              </g>
+            </g>
+          ) : (
+            // Day Clothes (Scarf & Beret)
+            <g>
+              {/* Scarf (Dusty Plum) */}
+              <path d="M 60 145 C 80 160, 120 160, 140 145 C 145 155, 135 170, 100 175 C 65 170, 55 155, 60 145 Z" fill="#7A6D8C" />
+              <path d="M 125 155 Q 135 180 120 195 Q 110 180 125 155 Z" fill="#7A6D8C" />
 
-          {/* Beret (Matcha Sage) */}
-          <g transform="translate(15, -10) rotate(-10 100 40)">
-            <ellipse cx="100" cy="40" rx="35" ry="15" fill="#A9B59D" />
-            <path d="M 100 25 L 102 18 L 98 18 Z" fill="#A9B59D" />
-          </g>
+              {/* Beret (Matcha Sage) */}
+              <g transform="translate(15, -10) rotate(-10 100 40)">
+                <ellipse cx="100" cy="40" rx="35" ry="15" fill="#A9B59D" />
+                <path d="M 100 25 L 102 18 L 98 18 Z" fill="#A9B59D" />
+              </g>
 
-          {/* Pencil behind ear */}
-          <g transform="translate(130, 45) rotate(45)">
-            <rect x="0" y="0" width="8" height="40" fill="#F4D03F" rx="2" />
-            <polygon points="0,40 8,40 4,50" fill="#E5E7E9" />
-            <polygon points="2,45 6,45 4,50" fill="#2A2928" />
-            <rect x="0" y="-5" width="8" height="5" fill="#E74C3C" rx="1" />
-          </g>
+              {/* Pencil behind ear */}
+              <g transform="translate(130, 45) rotate(45)">
+                <rect x="0" y="0" width="8" height="40" fill="#F4D03F" rx="2" />
+                <polygon points="0,40 8,40 4,50" fill="#E5E7E9" />
+                <polygon points="2,45 6,45 4,50" fill="#2A2928" />
+                <rect x="0" y="-5" width="8" height="5" fill="#E74C3C" rx="1" />
+              </g>
+            </g>
+          )}
 
           {/* Arms / Actions based on state */}
           <g style={{ transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>

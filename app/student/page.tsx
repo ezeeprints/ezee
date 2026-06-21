@@ -4,10 +4,16 @@ import React, { useState, useEffect } from 'react';
 import styles from './student.module.css';
 import StudentRoom from '../components/StudentRoom';
 import PrintStudio from '../components/dashboard/PrintStudio';
+import OrderHistory from '../components/dashboard/OrderHistory';
+import Notifications from '../components/dashboard/Notifications';
+import Payments from '../components/dashboard/Payments';
+import Settings from '../components/dashboard/Settings';
+import Reminders from '../components/dashboard/Reminders';
+import DeskUI from '../components/dashboard/DeskUI';
 import { audio } from '../components/AudioEngine';
 
 export type CameraFocus = 'desk' | 'library' | 'utilities';
-export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer';
+export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer' | 'clock' | 'desk';
 
 export default function StudentDashboard() {
   const [cameraFocus, setCameraFocus] = useState<CameraFocus>('desk');
@@ -81,7 +87,10 @@ export default function StudentDashboard() {
           onPrinterClick={() => handleObjectClick('utilities', 'printer')}
           onBookshelfClick={() => handleObjectClick('library', 'bookshelf')}
           onMailboxClick={() => handleObjectClick('utilities', 'mailbox')}
-          onDeskClick={() => handleObjectClick('desk', 'none')} // Return home
+          onWalletClick={() => handleObjectClick('desk', 'wallet')}
+          onDrawerClick={() => handleObjectClick('desk', 'drawer')}
+          onClockClick={() => handleObjectClick('desk', 'clock')}
+          onDeskClick={() => handleObjectClick('desk', 'desk')} 
         />
       </div>
 
@@ -117,23 +126,22 @@ export default function StudentDashboard() {
         )}
 
         {/* ORDER HISTORY */}
-        {activeModal === 'bookshelf' && (
-          <div className={styles.paperModal}>
-             <button className={styles.closeBtn} onClick={closeModal}>×</button>
-             <h2 className={styles.modalHeader}>Order History</h2>
-             <p>Your previous orders are stored here like old notebooks.</p>
-             {/* Stub for now */}
-          </div>
-        )}
+        {activeModal === 'bookshelf' && <OrderHistory onClose={closeModal} />}
 
         {/* NOTIFICATIONS */}
-        {activeModal === 'mailbox' && (
-          <div className={styles.paperModal}>
-             <button className={styles.closeBtn} onClick={closeModal}>×</button>
-             <h2 className={styles.modalHeader}>Mailbox</h2>
-             <p>No new mail today.</p>
-          </div>
-        )}
+        {activeModal === 'mailbox' && <Notifications onClose={closeModal} />}
+
+        {/* PAYMENTS */}
+        {activeModal === 'wallet' && <Payments onClose={closeModal} />}
+
+        {/* SETTINGS */}
+        {activeModal === 'drawer' && <Settings onClose={closeModal} />}
+
+        {/* REMINDERS */}
+        {activeModal === 'clock' && <Reminders onClose={closeModal} />}
+
+        {/* DESK / EZI UI */}
+        {activeModal === 'desk' && <DeskUI onClose={closeModal} />}
 
       </div>
     </div>

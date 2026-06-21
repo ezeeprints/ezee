@@ -11,6 +11,9 @@ interface StudentRoomProps {
   onBookshelfClick: () => void;
   onMailboxClick: () => void;
   onDeskClick: () => void;
+  onWalletClick: () => void;
+  onDrawerClick: () => void;
+  onClockClick: () => void;
 }
 
 export default function StudentRoom({
@@ -19,13 +22,34 @@ export default function StudentRoom({
   onPrinterClick,
   onBookshelfClick,
   onMailboxClick,
-  onDeskClick
+  onDeskClick,
+  onWalletClick,
+  onDrawerClick,
+  onClockClick
 }: StudentRoomProps) {
 
 
 
   return (
     <>
+      {/* Ambient Outer Life */}
+      {isNight ? (
+        <>
+          <div className={styles.shootingStar} style={{ top: '10vh', left: '10vw' }} />
+          <div className={styles.shootingStar} style={{ top: '30vh', left: '150vw', animationDelay: '3s' }} />
+        </>
+      ) : (
+        <>
+          <div className={styles.bird} style={{ top: '15vh', animationDelay: '0s' }} />
+          <div className={styles.bird} style={{ top: '20vh', animationDelay: '5s' }} />
+          <div className={styles.paperAirplane} style={{ top: '30vh', animationDelay: '2s' }}>
+             <svg width="30" height="20" viewBox="0 0 30 20">
+                <polygon points="0,10 30,0 20,20 15,10" fill="#FAF7F1" stroke="#2A2928" strokeWidth="1" />
+                <line x1="0" y1="10" x2="30" y2="0" stroke="#2A2928" strokeWidth="1" />
+             </svg>
+          </div>
+        </>
+      )}
       {/* 1. LIBRARY AREA (Left) */}
       <div className={styles.areaLibrary}>
         {/* Bookshelf */}
@@ -64,6 +88,28 @@ export default function StudentRoom({
       {/* 2. DESK AREA (Center) */}
       <div className={styles.areaDesk}>
         
+        {/* Clock */}
+        <div 
+          className={styles.interactiveObject}
+          style={{ position: 'absolute', top: '-25vh', left: '10vw', width: '60px', height: '60px', zIndex: 2 }}
+          onClick={onClockClick}
+          title="Pickup Reminders"
+        >
+          <svg width="100%" height="100%" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#FAF7F1" stroke="#2A2928" strokeWidth="4" />
+            <circle cx="50" cy="50" r="3" fill="#2A2928" />
+            {/* Clock Hands */}
+            <line x1="50" y1="50" x2="50" y2="20" stroke="#D48A70" strokeWidth="4" strokeLinecap="round" className={styles.clockTick} />
+            <line x1="50" y1="50" x2="70" y2="50" stroke="#2A2928" strokeWidth="6" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        {/* Sticky Notes */}
+        <div style={{ position: 'absolute', top: '10vh', right: '5vw', width: '80px', height: '80px', zIndex: 2 }}>
+           <div className={styles.wiggle} style={{ position: 'absolute', top: 0, left: 0, width: '40px', height: '40px', background: '#F4D03F', transform: 'rotate(5deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
+           <div className={styles.wiggle} style={{ position: 'absolute', top: '20px', left: '30px', width: '40px', height: '40px', background: '#A9B59D', transform: 'rotate(-10deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
+        </div>
+
         {/* Large Window */}
         <div 
           style={{ position: 'absolute', top: '-10vh', width: '40vw', height: '40vh', zIndex: 1 }}
@@ -85,11 +131,61 @@ export default function StudentRoom({
 
         {/* Desk Surface */}
         <div style={{ position: 'absolute', bottom: 0, width: '80vw', height: '20px', background: '#D48A70', border: '2px solid #2A2928', borderRadius: '10px', zIndex: 5 }} />
-        <div style={{ position: 'absolute', bottom: '-40vh', width: '70vw', height: '40vh', background: '#A0644D', border: '2px solid #2A2928', zIndex: 4 }} /> {/* Desk front */}
+        
+        {/* Desk front with Drawer */}
+        <div style={{ position: 'absolute', bottom: '-40vh', width: '70vw', height: '40vh', background: '#A0644D', border: '2px solid #2A2928', zIndex: 4 }}>
+          <div 
+            className={styles.interactiveObject}
+            style={{ position: 'absolute', top: '10%', left: '50%', marginLeft: '-15vw', width: '30vw', height: '10vh', background: '#D48A70', border: '2px solid #2A2928', borderRadius: '5px' }}
+            onClick={onDrawerClick}
+            title="Settings"
+          >
+            <div style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: '-20px', marginTop: '-5px', width: '40px', height: '10px', background: '#2A2928', borderRadius: '5px' }} />
+          </div>
+        </div>
 
         {/* Ezi */}
-        <div style={{ position: 'absolute', bottom: '20px', left: '40%', width: '180px', height: '220px', zIndex: 10 }}>
-          <EziCharacter state="dashboard" />
+        <div style={{ position: 'absolute', bottom: '20px', left: '40%', width: '180px', height: '220px', zIndex: 10 }} onClick={onDeskClick} title="Ezi's Desk" className={styles.interactiveObject}>
+          <EziCharacter state="dashboard" isNight={isNight} />
+        </div>
+
+        {/* Plant */}
+        <div className={styles.interactiveObject} style={{ position: 'absolute', bottom: '20px', left: '10vw', width: '60px', height: '100px', zIndex: 12 }}>
+          <svg width="100%" height="100%" viewBox="0 0 100 150">
+             <path d="M 30 150 L 70 150 L 80 100 L 20 100 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="4" />
+             <path d="M 50 100 Q 20 70 10 40 Q 30 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
+             <path d="M 50 100 Q 80 70 90 40 Q 70 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 4s infinite alternate-reverse' }} />
+          </svg>
+        </div>
+
+        {/* Wallet Pouch */}
+        <div className={styles.interactiveObject} style={{ position: 'absolute', bottom: '20px', right: '30vw', width: '50px', height: '40px', zIndex: 12 }} onClick={onWalletClick} title="Payments">
+          <svg width="100%" height="100%" viewBox="0 0 100 80">
+            <rect x="10" y="20" width="80" height="50" fill="#7A6D8C" rx="5" />
+            <path d="M 10 35 L 50 50 L 90 35 L 90 25 L 10 25 Z" fill="#D48A70" />
+            <circle cx="50" cy="50" r="5" fill="#EAE4DD" />
+          </svg>
+        </div>
+
+        {/* Coffee Cup */}
+        <div className={styles.interactiveObject} style={{ position: 'absolute', bottom: '20px', left: '30vw', width: '30px', height: '40px', zIndex: 12 }}>
+          <svg width="100%" height="100%" viewBox="0 0 50 50" style={{ overflow: 'visible' }}>
+             <path d="M 10 20 L 10 50 L 30 50 L 30 20 Z" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
+             <path d="M 30 25 Q 40 25 40 35 Q 40 45 30 45" fill="none" stroke="#FAF7F1" strokeWidth="3" />
+             {/* Steam */}
+             <path d="M 15 10 Q 10 0 20 -10" fill="none" stroke="#FAF7F1" strokeWidth="2" style={{ animation: 'rise 2s infinite ease-in' }} />
+          </svg>
+        </div>
+
+        {/* Tiny Cat */}
+        <div style={{ position: 'absolute', bottom: '20px', right: '40vw', width: '50px', height: '30px', zIndex: 12 }} className={styles.interactiveObject} title="Tiny Cat">
+           <svg width="100%" height="100%" viewBox="0 0 60 40">
+             <ellipse cx="30" cy="25" rx="20" ry="12" fill="#2A2928" />
+             <circle cx="15" cy="25" r="10" fill="#2A2928" />
+             <polygon points="5,15 15,15 10,5" fill="#2A2928" />
+             <polygon points="15,15 25,15 20,5" fill="#2A2928" />
+             <path d="M 45 25 Q 60 25 55 20" fill="none" stroke="#2A2928" strokeWidth="6" strokeLinecap="round" style={{ animation: 'sway 4s infinite alternate' }} />
+           </svg>
         </div>
 
         {/* Lamp (Night Mode Toggle) */}
