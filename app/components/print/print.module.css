@@ -1,0 +1,1107 @@
+/*
+  Print Studio — The Ritual Experience
+  Studio Ghibli × Miyazaki's Workshop × Muji × Animal Crossing
+  
+  Color Palette:
+  Paper Cream:   #FAF7F1
+  Coffee Ink:    #2A2928
+  Dusty Plum:    #7A6D8C
+  Terracotta:    #D48A70
+  Matcha Sage:   #A9B59D
+  Moonlight:     #EAE4DD
+  Wood Warm:     #C4956A
+  Wood Dark:     #8B6340
+*/
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ROOT CONTAINER
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.printDesk {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #FAF7F1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Cabinet Grotesk', 'Instrument Sans', 'Space Grotesk', sans-serif;
+  color: #2A2928;
+  transition: background-color 2s ease;
+}
+
+.printDesk.nightMode {
+  background: #1C1A18;
+  color: #EAE4DD;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DESK SURFACE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.deskSurface {
+  position: relative;
+  flex: 1;
+  /* Warm wood grain via layered radial gradients */
+  background:
+    repeating-linear-gradient(
+      88deg,
+      transparent,
+      transparent 60px,
+      rgba(139, 99, 64, 0.04) 60px,
+      rgba(139, 99, 64, 0.04) 62px
+    ),
+    repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 80px,
+      rgba(139, 99, 64, 0.03) 80px,
+      rgba(139, 99, 64, 0.03) 82px
+    ),
+    linear-gradient(180deg, #F0E8DC 0%, #E8DDD0 40%, #DDD0C0 100%);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.deskSurface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Paper grain noise */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOP BAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.topBar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem;
+  background: rgba(250, 247, 241, 0.9);
+  border-bottom: 1px solid rgba(42, 41, 40, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.nightMode .topBar {
+  background: rgba(28, 26, 24, 0.9);
+  border-bottom: 1px solid rgba(234, 228, 221, 0.08);
+}
+
+.topBarTitle {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.1rem;
+  color: #7A6D8C;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #7A6D8C;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  transition: color 0.2s ease, transform 0.3s ease;
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  color: #D48A70;
+  transform: rotate(90deg);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DESK MAIN CONTENT
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.deskContent {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.deskLeft {
+  flex: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 2rem;
+  position: relative;
+}
+
+.deskRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  gap: 1.5rem;
+  border-left: 1px solid rgba(42, 41, 40, 0.08);
+  position: relative;
+  overflow-y: auto;
+}
+
+.nightMode .deskRight {
+  border-left-color: rgba(234, 228, 221, 0.08);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   UPLOAD ZONE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.uploadZone {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  cursor: pointer;
+  /* Aged paper look */
+  background: #FAF7F1;
+  border: 2px dashed rgba(42, 41, 40, 0.2);
+  border-radius: 4px;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow:
+    0 4px 6px rgba(42, 41, 40, 0.04),
+    0 12px 30px rgba(42, 41, 40, 0.06),
+    inset 0 0 0 0 rgba(169, 181, 157, 0);
+}
+
+.uploadZone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+.uploadZone.dragOver {
+  border-color: #A9B59D;
+  background: rgba(169, 181, 157, 0.06);
+  box-shadow:
+    0 8px 24px rgba(42, 41, 40, 0.08),
+    0 2px 8px rgba(169, 181, 157, 0.2),
+    inset 0 0 0 4px rgba(169, 181, 157, 0.08);
+  transform: translateY(-2px);
+}
+
+.uploadHint {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1rem;
+  color: #7A6D8C;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.uploadSubhint {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(122, 109, 140, 0.6);
+  text-align: center;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DOCUMENT SHEET (Physical Paper)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.documentSheet {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: #FFFFFF;
+  padding: 1.8rem 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(42, 41, 40, 0.04),
+    0 4px 8px rgba(42, 41, 40, 0.06),
+    0 12px 24px rgba(42, 41, 40, 0.08),
+    0 24px 48px rgba(42, 41, 40, 0.04);
+  /* Slight tilt for physical feel */
+  transform: rotate(-0.5deg);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s ease;
+}
+
+.documentSheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.documentSheet:hover {
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow:
+    0 2px 4px rgba(42, 41, 40, 0.06),
+    0 8px 16px rgba(42, 41, 40, 0.08),
+    0 20px 40px rgba(42, 41, 40, 0.1),
+    0 40px 80px rgba(42, 41, 40, 0.06);
+}
+
+/* Curled corner */
+.curlCorner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 24px 24px;
+  border-color: transparent transparent #EAE4DD rgba(42, 41, 40, 0.06);
+  transition: border-width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.documentSheet:hover .curlCorner {
+  border-width: 0 0 38px 38px;
+}
+
+/* Bookmark ribbon */
+.bookmarkRibbon {
+  position: absolute;
+  top: -8px;
+  right: 24px;
+  width: 14px;
+  height: 36px;
+  background: #D48A70;
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+  box-shadow: 1px 2px 4px rgba(42, 41, 40, 0.1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.documentSheet:hover .bookmarkRibbon {
+  transform: translateY(-3px);
+}
+
+.docName {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2A2928;
+  margin: 0 0 0.3rem 0;
+}
+
+.docMeta {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  color: #7A6D8C;
+  margin: 0 0 1rem 0;
+}
+
+/* Lined paper lines */
+.paperLines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0.15;
+}
+
+.paperLine {
+  height: 1px;
+  background: #7A6D8C;
+  border-radius: 1px;
+}
+
+.paperLine:nth-child(3n) {
+  width: 70%;
+}
+
+.paperLine:nth-child(5n) {
+  width: 85%;
+}
+
+/* Document type-specific desk objects */
+.deskHighlighter {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 2rem;
+  width: 12px;
+  height: 70px;
+  border-radius: 6px 6px 3px 3px;
+  transform: rotate(15deg);
+}
+
+.deskRuler {
+  position: absolute;
+  bottom: 2rem;
+  right: 3rem;
+  width: 100px;
+  height: 16px;
+  background: #F4D03F;
+  border: 1px solid rgba(42, 41, 40, 0.15);
+  border-radius: 2px;
+  transform: rotate(-5deg);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  gap: 6px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETTINGS OBJECTS (Tactile)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settingsLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7A6D8C;
+  margin: 0 0 0.6rem 0;
+}
+
+.settingsRow {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+/* Paper size option — looks like actual paper */
+.paperOption {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  user-select: none;
+}
+
+.paperOption:hover {
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+.paperOption.selected {
+  transform: translateY(-6px) rotate(0deg);
+}
+
+.paperOptionInner {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(42, 41, 40, 0.12);
+  box-shadow: 0 2px 4px rgba(42, 41, 40, 0.08), 0 6px 12px rgba(42, 41, 40, 0.06);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.paperOption.selected .paperOptionInner {
+  border-color: #A9B59D;
+  box-shadow: 0 4px 8px rgba(42, 41, 40, 0.1), 0 12px 24px rgba(42, 41, 40, 0.08), 0 0 0 2px rgba(169, 181, 157, 0.4);
+}
+
+.paperOptionLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #7A6D8C;
+  letter-spacing: 0.05em;
+}
+
+/* Ink bottle option */
+.inkBottle {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.inkBottle:hover {
+  transform: translateY(-4px) rotate(2deg);
+}
+
+.inkBottle.selected {
+  transform: translateY(-5px) rotate(0deg);
+}
+
+.inkBottleLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  color: #7A6D8C;
+  font-weight: 600;
+}
+
+/* Binding option */
+.bindingOption {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: 1.5px solid rgba(42, 41, 40, 0.08);
+  background: rgba(250, 247, 241, 0.6);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+  min-width: 70px;
+}
+
+.bindingOption:hover {
+  transform: translateY(-3px);
+  background: rgba(250, 247, 241, 1);
+  box-shadow: 0 6px 16px rgba(42, 41, 40, 0.08);
+}
+
+.bindingOption.selected {
+  border-color: #A9B59D;
+  background: rgba(169, 181, 157, 0.08);
+  box-shadow: 0 0 0 2px rgba(169, 181, 157, 0.3), 0 6px 16px rgba(42, 41, 40, 0.08);
+  transform: translateY(-4px);
+}
+
+.bindingLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.68rem;
+  color: #7A6D8C;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Copies counter with paper stack */
+.copiesCounter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.copiesBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(42, 41, 40, 0.2);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #2A2928;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.copiesBtn:hover {
+  background: #2A2928;
+  color: #FAF7F1;
+  transform: scale(1.1);
+}
+
+.copiesBtn:active {
+  transform: scale(0.9);
+}
+
+.copiesValue {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2A2928;
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* Paper stack visual */
+.paperStackVisual {
+  position: relative;
+  width: 50px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PRINT CITY SHOPS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.shopsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.shopStorefront {
+  position: relative;
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background: rgba(250, 247, 241, 0.8);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  user-select: none;
+}
+
+.shopStorefront::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.shopStorefront:hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  box-shadow: 0 8px 24px rgba(42, 41, 40, 0.1);
+}
+
+.shopStorefront.selected {
+  border-color: #A9B59D;
+  background: rgba(169, 181, 157, 0.08);
+  transform: translateY(-6px) rotate(0deg);
+  box-shadow: 0 0 0 2px rgba(169, 181, 157, 0.3), 0 12px 32px rgba(42, 41, 40, 0.12);
+}
+
+.shopName {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2A2928;
+  margin: 0.5rem 0 0.2rem 0;
+}
+
+.shopPersonality {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  color: #7A6D8C;
+  line-height: 1.5;
+}
+
+.shopEta {
+  margin-top: 0.6rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #D48A70;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SACRED PRINTER PHASE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.sacredPrinterPhase {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  z-index: 20;
+  animation: phaseIn 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.printerWaitMessage {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.2rem;
+  color: #7A6D8C;
+  text-align: center;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.7; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* Printer body */
+.printerBody {
+  position: relative;
+}
+
+@keyframes vibrate {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-1px) rotate(-0.3deg); }
+  75% { transform: translateX(1px) rotate(0.3deg); }
+}
+
+.printerVibrating {
+  animation: vibrate 0.15s ease-in-out infinite;
+}
+
+/* Paper entering printer */
+@keyframes paperEnter {
+  0% { transform: translateY(-40px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.paperEntering {
+  animation: paperEnter 600ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Blinking light */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.printerLight {
+  animation: blink 1.2s steps(1) infinite;
+}
+
+.printerLightSlow {
+  animation: blink 2s steps(1) infinite;
+  animation-delay: 0.6s;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AMBIENT LIFE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Coffee steam */
+@keyframes steamRise {
+  0% { transform: translateY(0) scaleX(1); opacity: 0.6; }
+  50% { transform: translateY(-20px) scaleX(1.3); opacity: 0.3; }
+  100% { transform: translateY(-40px) scaleX(0.8); opacity: 0; }
+}
+
+.steamParticle {
+  position: absolute;
+  width: 6px;
+  border-radius: 50%;
+  background: rgba(250, 247, 241, 0.7);
+  animation: steamRise 2.5s ease-out infinite;
+  pointer-events: none;
+}
+
+.steamParticle:nth-child(2) {
+  animation-delay: 0.8s;
+  left: 3px;
+}
+
+.steamParticle:nth-child(3) {
+  animation-delay: 1.6s;
+  left: -3px;
+}
+
+/* Dust particles */
+@keyframes floatDust {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { transform: translate(var(--dx, 30px), var(--dy, -60px)) rotate(180deg); opacity: 0; }
+}
+
+.dustParticle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(42, 41, 40, 0.12);
+  animation: floatDust 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Curtains sway */
+@keyframes curtainSway {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(2deg); }
+}
+
+.curtain {
+  animation: curtainSway 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.curtainRight {
+  animation: curtainSway 8s ease-in-out infinite reverse;
+  transform-origin: top center;
+}
+
+/* Plant sway */
+@keyframes plantSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.plantSway {
+  animation: plantSway 4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Rain outside window */
+@keyframes rainDrop {
+  0% { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(120px); opacity: 0; }
+}
+
+.rainDrop {
+  position: absolute;
+  width: 1.5px;
+  height: 16px;
+  background: linear-gradient(180deg, transparent, rgba(169, 181, 157, 0.5));
+  animation: rainDrop 0.8s linear infinite;
+  transform: rotate(15deg);
+}
+
+/* Cloud shadow */
+@keyframes cloudDrift {
+  0% { transform: translateX(-10%); }
+  100% { transform: translateX(110%); }
+}
+
+.cloudShadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 60px;
+  background: radial-gradient(ellipse, rgba(42, 41, 40, 0.04) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: cloudDrift 25s linear infinite;
+  pointer-events: none;
+}
+
+/* Bird flying */
+@keyframes birdFly {
+  0% { transform: translateX(-100px) translateY(20px) scale(0.6); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { transform: translateX(calc(100vw + 100px)) translateY(-10px) scale(0.8); opacity: 0; }
+}
+
+.bird {
+  position: absolute;
+  animation: birdFly 18s linear infinite;
+  pointer-events: none;
+}
+
+.bird::before, .bird::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 6px;
+  border-top: 2px solid rgba(42, 41, 40, 0.35);
+  border-radius: 50% 50% 0 0;
+}
+
+.bird::after {
+  left: 10px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TICKET KEEPSAKE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@keyframes ticketSlideUp {
+  0% { transform: translateY(60px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.ticketKeepsake {
+  position: relative;
+  width: 320px;
+  background: #FAF7F1;
+  padding: 2.5rem 2rem;
+  box-shadow:
+    0 2px 4px rgba(42, 41, 40, 0.06),
+    0 8px 20px rgba(42, 41, 40, 0.1),
+    0 24px 48px rgba(42, 41, 40, 0.08);
+  animation: ticketSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ticketKeepsake::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Torn bottom edge */
+.ticketKeepsake::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background:
+    linear-gradient(135deg, #FAF7F1 25%, transparent 25%) -8px 0,
+    linear-gradient(225deg, #FAF7F1 25%, transparent 25%) -8px 0,
+    linear-gradient(315deg, #FAF7F1 25%, transparent 25%),
+    linear-gradient(45deg, #FAF7F1 25%, transparent 25%);
+  background-size: 16px 16px;
+  background-color: transparent;
+}
+
+.ticketKeepsake:hover {
+  transform: translateY(-4px) rotate(1deg);
+}
+
+.ticketDivider {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px dashed rgba(42, 41, 40, 0.2);
+}
+
+.ticketOrderNum {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7A6D8C;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 0.8rem 0;
+}
+
+.ticketDocName {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2A2928;
+  margin: 0 0 0.3rem 0;
+  line-height: 1.2;
+}
+
+.ticketDetails {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  color: #7A6D8C;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.8rem 0;
+}
+
+.ticketReady {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #A9B59D;
+  margin: 0.5rem 0;
+}
+
+.ticketSignature {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(42, 41, 40, 0.4);
+  font-style: italic;
+  text-align: right;
+  margin-top: 1rem;
+}
+
+/* Stamp */
+.ticketStamp {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 52px;
+  height: 52px;
+  border: 3px double #D48A70;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D48A70;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  transform: rotate(-15deg);
+  opacity: 0.75;
+  line-height: 1.2;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SIGNATURE MOMENT (Paper Airplane)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.signatureMoment {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: linear-gradient(180deg, #A9B59D20 0%, #FAF7F1 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: phaseIn 0.5s ease forwards;
+}
+
+@keyframes phaseIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes airplaneJourney {
+  0% {
+    transform: translate(-20vw, 20vh) rotate(15deg) scale(1);
+    opacity: 0;
+  }
+  5% { opacity: 1; }
+  30% {
+    transform: translate(20vw, -5vh) rotate(10deg) scale(1.1);
+  }
+  60% {
+    transform: translate(60vw, 10vh) rotate(20deg) scale(1);
+  }
+  90% {
+    transform: translate(100vw, 40vh) rotate(30deg) scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(110vw, 45vh) rotate(30deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.flyingAirplane {
+  position: absolute;
+  animation: airplaneJourney 4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  filter: drop-shadow(0 4px 12px rgba(42, 41, 40, 0.15));
+  z-index: 10;
+}
+
+.signatureCity {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+}
+
+.signatureMessage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 3.5s both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.signatureHeadline {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2A2928;
+  margin: 0 0 0.5rem 0;
+}
+
+.signatureSubline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  color: #7A6D8C;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SEND BUTTON
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.sendBtn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FAF7F1;
+  background: #2A2928;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.2), 0 6px 20px rgba(42, 41, 40, 0.15);
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sendBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 12px 28px rgba(42, 41, 40, 0.2);
+}
+
+.sendBtn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(42, 41, 40, 0.1);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PHASE TRANSITIONS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.phaseContainer {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NIGHT MODE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.nightMode .uploadZone {
+  background: rgba(28, 26, 24, 0.6);
+  border-color: rgba(234, 228, 221, 0.15);
+  color: #EAE4DD;
+}
+
+.nightMode .documentSheet {
+  background: #252320;
+  color: #EAE4DD;
+}
+
+.nightMode .shopStorefront {
+  background: rgba(28, 26, 24, 0.8);
+  border-color: rgba(234, 228, 221, 0.08);
+}
+
+.nightMode .shopName {
+  color: #EAE4DD;
+}
+
+.nightMode .bindingOption {
+  background: rgba(28, 26, 24, 0.6);
+  border-color: rgba(234, 228, 221, 0.1);
+}
+
+.nightMode .ticketKeepsake {
+  background: #252320;
+  color: #EAE4DD;
+}
+
+.nightMode .sendBtn {
+  background: #EAE4DD;
+  color: #2A2928;
+}

@@ -352,13 +352,3 @@
   50% { transform: rotate(6deg); }
 }
 
-/* Cat stretching animation */
-@keyframes catStretch {
-  0%, 100% { transform: scaleX(1); }
-  50% { transform: scaleX(1.15) translateY(-1px); }
-}
-
-.catStretching {
-  animation: catStretch 5s infinite ease-in-out;
-}
-

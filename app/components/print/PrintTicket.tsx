@@ -1,0 +1,157 @@
+'use client';
+
+import React from 'react';
+import styles from './print.module.css';
+
+interface PrintTicketProps {
+  orderNum: number;
+  docName: string;
+  pageCount: number;
+  copies: number;
+  binding: string;
+  paperSize: string;
+  colorMode: string;
+  shopName: string;
+  etaMinutes: number;
+  isNight: boolean;
+  onSendToShop: () => void;
+}
+
+const bindingLabels: Record<string, string> = {
+  none: 'Loose Sheets',
+  spiral: 'Spiral Bound',
+  staple: 'Staple Bound',
+  hardcover: 'Hard Cover',
+};
+
+const colorLabels: Record<string, string> = {
+  bw: 'Black & White',
+  color: 'Full Color',
+};
+
+function EziSmall() {
+  return (
+    <svg width="36" height="44" viewBox="0 0 60 80">
+      <ellipse cx="30" cy="16" rx="20" ry="18" fill="#2A2928" />
+      <ellipse cx="30" cy="24" rx="16" ry="12" fill="#FAF7F1" />
+      {/* Happy eyes */}
+      <path d="M 22 22 Q 26 18 28 22" stroke="#2A2928" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M 32 22 Q 36 18 38 22" stroke="#2A2928" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <ellipse cx="18" cy="28" rx="5" ry="3" fill="#D48A70" opacity="0.5" />
+      <ellipse cx="42" cy="28" rx="5" ry="3" fill="#D48A70" opacity="0.5" />
+      <path d="M 26 31 Q 30 36 34 31" stroke="#2A2928" strokeWidth="2" fill="none" strokeLinecap="round" />
+      {/* Apron body */}
+      <path d="M 16 34 C 24 40 36 40 44 34 C 52 56 44 76 30 76 C 16 76 8 56 16 34 Z" fill="#EAE4DD" />
+      <rect x="23" y="50" width="14" height="10" rx="2" fill="rgba(42,41,40,0.08)" stroke="rgba(42,41,40,0.1)" strokeWidth="0.5" />
+      {/* Arms up in celebration */}
+      <path d="M 16 38 C 6 24 4 10 12 4" stroke="#2A2928" strokeWidth="9" strokeLinecap="round" fill="none" />
+      <path d="M 44 38 C 54 24 56 10 48 4" stroke="#2A2928" strokeWidth="9" strokeLinecap="round" fill="none" />
+      {/* Sparkles */}
+      <circle cx="6" cy="4" r="2.5" fill="#D48A70" />
+      <circle cx="54" cy="4" r="2.5" fill="#A9B59D" />
+    </svg>
+  );
+}
+
+export default function PrintTicket({
+  orderNum, docName, pageCount, copies,
+  binding, paperSize, colorMode, shopName,
+  etaMinutes, isNight, onSendToShop,
+}: PrintTicketProps) {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '2rem',
+      padding: '2rem',
+      animation: `${styles.phaseIn} 0.5s ease forwards`,
+    }}>
+      {/* Ezi celebrating above the ticket */}
+      <div style={{ position: 'relative' }}>
+        <EziSmall />
+        {/* Celebration confetti */}
+        {['#D48A70','#A9B59D','#7A6D8C','#F4D03F','#D48A70'].map((c, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            width: '6px',
+            height: '6px',
+            borderRadius: i % 2 === 0 ? '50%' : '1px',
+            background: c,
+            top: `${-5 - i * 5}px`,
+            left: `${i * 8 - 12}px`,
+            transform: `rotate(${i * 30}deg)`,
+            animation: `${styles.breathe} ${1 + i * 0.2}s ease-in-out infinite`,
+          }} />
+        ))}
+      </div>
+
+      {/* The Ticket */}
+      <div className={styles.ticketKeepsake} style={{ background: isNight ? '#252320' : '#FAF7F1', color: isNight ? '#EAE4DD' : '#2A2928' }}>
+        {/* Stamp */}
+        <div className={styles.ticketStamp}>
+          READY<br />✓
+        </div>
+
+        <p className={styles.ticketOrderNum}>ORDER #{String(orderNum).padStart(4, '0')}</p>
+        <hr className={styles.ticketDivider} />
+
+        <h2 className={styles.ticketDocName} style={{ color: isNight ? '#EAE4DD' : '#2A2928' }}>{docName}</h2>
+
+        <div className={styles.ticketDetails}>
+          <span>{pageCount} Pages{copies > 1 ? ` × ${copies} Copies` : ''}</span>
+          <span>{colorLabels[colorMode] ?? colorMode}</span>
+          <span>{bindingLabels[binding] ?? binding}</span>
+          <span>{paperSize} Paper</span>
+          <span>{shopName}</span>
+        </div>
+
+        <hr className={styles.ticketDivider} />
+
+        <p className={styles.ticketReady}>Ready In {etaMinutes} Minutes ✨</p>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+          {/* Tiny date */}
+          <span style={{ fontFamily: 'Space Grotesk', fontSize: '0.72rem', color: 'rgba(122,109,140,0.6)' }}>
+            {dateStr}
+          </span>
+
+          {/* Handwritten-style signature */}
+          <p className={styles.ticketSignature}>
+            Prepared together
+          </p>
+        </div>
+
+        {/* Tiny Ezi illustration at bottom */}
+        <div style={{ textAlign: 'center', marginTop: '1rem', opacity: 0.4 }}>
+          <svg width="32" height="20" viewBox="0 0 32 20">
+            <ellipse cx="16" cy="8" rx="10" ry="9" fill="#2A2928" />
+            <ellipse cx="16" cy="11" rx="8" ry="6" fill="#FAF7F1" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Send button */}
+      <button className={styles.sendBtn} onClick={onSendToShop}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M22 2L11 13" />
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+        </svg>
+        Send to {shopName}
+      </button>
+
+      <p style={{
+        fontFamily: 'Instrument Sans, sans-serif',
+        fontSize: '0.8rem',
+        color: isNight ? 'rgba(234,228,221,0.5)' : 'rgba(42,41,40,0.4)',
+        textAlign: 'center',
+      }}>
+        Screenshot this ticket — it&apos;s yours to keep ✨
+      </p>
+    </div>
+  );
+}
