@@ -148,7 +148,7 @@ export default function HeroSection() {
             }}
           >
             <a
-              href="#how"
+              href="/auth"
               style={{
                 textDecoration: "none",
                 display: "inline-flex",

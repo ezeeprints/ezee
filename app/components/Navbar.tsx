@@ -141,7 +141,7 @@ export default function Navbar() {
       </div>
 
       <a
-        href="#cta"
+        href="/auth"
         style={{
           textDecoration: "none",
           fontSize: 14.5,

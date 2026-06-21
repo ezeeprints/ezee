@@ -148,7 +148,7 @@ export default function CtaSection() {
         </p>
 
         <a
-          href="#hero"
+          href="/auth"
           style={{
             textDecoration: "none",
             display: "inline-flex",
