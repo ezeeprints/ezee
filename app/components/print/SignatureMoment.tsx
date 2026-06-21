@@ -187,13 +187,13 @@ export default function SignatureMoment({ shopName, isNight, onComplete }: Signa
       {showMessage && (
         <div className={styles.signatureMessage}>
           <h2 className={styles.signatureHeadline} style={{ color: isNight ? '#EAE4DD' : '#2A2928' }}>
-            Order on its way ✈
+            Your notes are on their way ✨
           </h2>
           <p className={styles.signatureSubline}>
-            {shopName} received your order. Tracking begins now.
+            Ezi is staying with them until they're ready.
           </p>
-          <p style={{ fontFamily: 'Instrument Sans, sans-serif', fontSize: '0.8rem', color: 'rgba(122,109,140,0.7)', marginTop: '0.5rem' }}>
-            Thanks, Ezi.
+          <p style={{ fontFamily: 'Instrument Sans, sans-serif', fontSize: '0.8rem', color: 'rgba(122,109,140,0.7)', marginTop: '0.5rem', fontStyle: 'italic' }}>
+            You're not waiting alone.
           </p>
         </div>
       )}

@@ -10,6 +10,7 @@ import SacredPrinter from './SacredPrinter';
 import PrintTicket from './PrintTicket';
 import SignatureMoment from './SignatureMoment';
 import PaymentDesk from './PaymentDesk';
+import TheJourney from './TheJourney';
 import { useMemorySystem } from './useMemorySystem';
 
 type Phase = 'upload' | 'settings' | 'shop' | 'payment' | 'printing' | 'ticket' | 'signature' | 'done';
@@ -335,7 +336,7 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
       )}
 
       {/* Signature moment — full overlay */}
-      {(phase === 'signature' || phase === 'done') && (
+      {phase === 'signature' && (
         <SignatureMoment
           shopName={shop.name}
           isNight={isNight}
@@ -343,6 +344,16 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
             trackOrder(pageCount, copies);
             setPhase('done');
           }}
+        />
+      )}
+
+      {/* The Journey — Post-order atmospheric experience */}
+      {phase === 'done' && (
+        <TheJourney
+          docName={docName}
+          shopName={shop.name}
+          isNight={isNight}
+          onClose={onClose}
         />
       )}
 

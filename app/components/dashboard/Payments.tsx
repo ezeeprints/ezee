@@ -19,10 +19,10 @@ export default function Payments({ onClose }: PaymentsProps) {
   const [credits, setCredits] = useState(75);
 
   const transactions: Transaction[] = [
-    { id: '#PAY-9041', date: '21 Jun 2026', desc: 'Added 50 Print Credits', credits: 50, cost: '$5.00' },
-    { id: '#PAY-8822', date: '20 Jun 2026', desc: 'Chemistry Lab Report 4 (EZ-9112)', credits: -15, cost: 'Credits' },
-    { id: '#PAY-8751', date: '15 Jun 2026', desc: 'Resume_2026.pdf Print Job', credits: -10, cost: 'Credits' },
-    { id: '#PAY-8600', date: '02 Jun 2026', desc: 'Added 50 Print Credits', credits: 50, cost: '$5.00' }
+    { id: '1', date: '21 Jun 2026', desc: 'Added 50 Print Credits', credits: 50, cost: '$5.00' },
+    { id: '2', date: '20 Jun 2026', desc: 'Chemistry Lab Report 4', credits: -15, cost: 'Credits' },
+    { id: '3', date: '15 Jun 2026', desc: 'Resume_2026.pdf Print Job', credits: -10, cost: 'Credits' },
+    { id: '4', date: '02 Jun 2026', desc: 'Added 50 Print Credits', credits: 50, cost: '$5.00' }
   ];
 
   const handleAddCredits = () => {
@@ -75,7 +75,7 @@ export default function Payments({ onClose }: PaymentsProps) {
             <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Instrument Sans', fontSize: '0.95rem', borderBottom: '1px dotted rgba(42,41,40,0.1)', paddingBottom: '0.5rem' }}>
               <div>
                 <div style={{ fontWeight: 'bold', color: '#2A2928' }}>{t.desc}</div>
-                <div style={{ fontSize: '0.8rem', color: '#7A6D8C', fontFamily: 'Space Grotesk' }}>{t.date} • {t.id}</div>
+                <div style={{ fontSize: '0.8rem', color: '#7A6D8C', fontFamily: 'Space Grotesk' }}>{t.date}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ 

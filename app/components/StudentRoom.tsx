@@ -172,7 +172,7 @@ export default function StudentRoom({
           className={styles.interactiveObject} 
           style={{ position: 'absolute', bottom: '20px', left: '10vw', width: '60px', height: '100px', zIndex: 12 }}
           onClick={onPlantClick}
-          title="Progress"
+          title="The Desk Plant"
         >
           <svg width="100%" height="100%" viewBox="0 0 100 150">
              <path d="M 30 150 L 70 150 L 80 100 L 20 100 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="4" />

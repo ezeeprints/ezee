@@ -43,12 +43,9 @@ function EziSmall() {
       {/* Apron body */}
       <path d="M 16 34 C 24 40 36 40 44 34 C 52 56 44 76 30 76 C 16 76 8 56 16 34 Z" fill="#EAE4DD" />
       <rect x="23" y="50" width="14" height="10" rx="2" fill="rgba(42,41,40,0.08)" stroke="rgba(42,41,40,0.1)" strokeWidth="0.5" />
-      {/* Arms up in celebration */}
-      <path d="M 16 38 C 6 24 4 10 12 4" stroke="#2A2928" strokeWidth="9" strokeLinecap="round" fill="none" />
-      <path d="M 44 38 C 54 24 56 10 48 4" stroke="#2A2928" strokeWidth="9" strokeLinecap="round" fill="none" />
-      {/* Sparkles */}
-      <circle cx="6" cy="4" r="2.5" fill="#D48A70" />
-      <circle cx="54" cy="4" r="2.5" fill="#A9B59D" />
+      {/* Arms resting softly */}
+      <path d="M 16 38 C 12 45 10 50 14 60" stroke="#2A2928" strokeWidth="8" strokeLinecap="round" fill="none" />
+      <path d="M 44 38 C 48 45 50 50 46 60" stroke="#2A2928" strokeWidth="8" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -71,23 +68,9 @@ export default function PrintTicket({
       padding: '2rem',
       animation: `${styles.phaseIn} 0.5s ease forwards`,
     }}>
-      {/* Ezi celebrating above the ticket */}
+      {/* Ezi resting above the ticket */}
       <div style={{ position: 'relative' }}>
         <EziSmall />
-        {/* Celebration confetti */}
-        {['#D48A70','#A9B59D','#7A6D8C','#F4D03F','#D48A70'].map((c, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: '6px',
-            height: '6px',
-            borderRadius: i % 2 === 0 ? '50%' : '1px',
-            background: c,
-            top: `${-5 - i * 5}px`,
-            left: `${i * 8 - 12}px`,
-            transform: `rotate(${i * 30}deg)`,
-            animation: `${styles.breathe} ${1 + i * 0.2}s ease-in-out infinite`,
-          }} />
-        ))}
       </div>
 
       {/* The Ticket */}
@@ -97,8 +80,6 @@ export default function PrintTicket({
           READY<br />✓
         </div>
 
-        <p className={styles.ticketOrderNum}>ORDER #{String(orderNum).padStart(4, '0')}</p>
-        <hr className={styles.ticketDivider} />
 
         <h2 className={styles.ticketDocName} style={{ color: isNight ? '#EAE4DD' : '#2A2928' }}>{docName}</h2>
 

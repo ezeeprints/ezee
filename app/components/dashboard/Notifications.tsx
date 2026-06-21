@@ -37,7 +37,7 @@ export default function Notifications({ onClose }: NotificationsProps) {
       sender: 'Ezee Prints Office',
       date: '20 Jun 2026',
       subject: 'Your notes are ready for pickup! 📚',
-      body: 'Good news! Your printing order EZ-9112 (Chemistry Lab Report 4) has been processed and is currently at the dispatch center. Head over to the pick-up counter when you have a moment.',
+      body: 'Chemistry Lab Report 4 is ready. Ezi carefully prepared it, and it is resting at the counter, waiting for you. Head over when you have a moment.',
       isRead: true,
       type: 'letter',
       stampEmoji: '📮'

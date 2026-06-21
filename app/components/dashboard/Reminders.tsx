@@ -18,7 +18,7 @@ interface Reminder {
 
 export default function Reminders({ onClose }: RemindersProps) {
   const [reminders, setReminders] = useState<Reminder[]>([
-    { id: 'rem-1', text: 'Pick up Chemistry Lab Report 4 (EZ-9112) from Ezee Prints Counter!', due: 'Today before 6 PM', color: '#D48A70', rotation: '-3deg', type: 'pickup' },
+    { id: 'rem-1', text: 'Pick up Chemistry Lab Report 4 from Ezee Prints Counter!', due: 'Today before 6 PM', color: '#D48A70', rotation: '-3deg', type: 'pickup' },
     { id: 'rem-2', text: 'Calculus assignment submission deadline', due: 'Monday morning', color: '#A9B59D', rotation: '2deg', type: 'academic' },
     { id: 'rem-3', text: 'Prepare Physics print file (chapters 4-6)', due: 'Tuesday', color: '#EAE4DD', rotation: '-1deg', type: 'academic' }
   ]);

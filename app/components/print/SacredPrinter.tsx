@@ -128,7 +128,7 @@ function PrinterMachine({ printing, progress }: { printing: boolean; progress: n
       <rect x="40" y="118" width="62" height="10" rx="2" fill="#0D0D0D" />
       {printing && (
         <text x="71" y="126" textAnchor="middle" fontFamily="Space Grotesk" fontSize="5" fill="#A9B59D">
-          {progress < 100 ? `PRINTING ${Math.round(progress)}%` : 'DONE ✓'}
+          {progress < 100 ? 'PRINTING...' : 'READY ✓'}
         </text>
       )}
 
@@ -232,23 +232,16 @@ export default function SacredPrinter({ isNight, copies, docName, onDone }: Sacr
         {/* Wait message — breathes */}
         <p className={styles.printerWaitMessage}>{waitMessages[msgIndex]}</p>
 
-        {/* Progress arc (not a bar — a subtle glow ring) */}
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(169,181,157,0.15)" strokeWidth="4" />
-          <circle
-            cx="40" cy="40" r="32"
-            fill="none"
-            stroke="#A9B59D"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 32}`}
-            strokeDashoffset={2 * Math.PI * 32 * (1 - progress / 100)}
-            transform="rotate(-90 40 40)"
-            style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+        {/* Ambient LED status glow */}
+        <svg width="40" height="40" viewBox="0 0 40 40">
+          <circle 
+            cx="20" cy="20" r="8" 
+            fill={progress < 100 ? "#A9B59D" : "#D48A70"} 
+            style={{ 
+              animation: progress < 100 ? `${styles.breathe} 2.5s ease-in-out infinite` : 'none',
+              filter: `drop-shadow(0 0 6px ${progress < 100 ? "rgba(169,181,157,0.6)" : "rgba(212,138,112,0.6)"})` 
+            }} 
           />
-          <text x="40" y="44" textAnchor="middle" fontFamily="Space Grotesk" fontSize="12" fill={isNight ? '#EAE4DD' : '#2A2928'} fontWeight="700">
-            {Math.round(progress)}%
-          </text>
         </svg>
 
         {/* Dust particles floating */}
