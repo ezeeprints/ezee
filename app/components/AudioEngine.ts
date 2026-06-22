@@ -21,6 +21,11 @@ class CozyAudioEngine {
   private chordIndex = 0;
   private activeOscillators: OscillatorNode[] = [];
 
+  // Ambient Library & Ticking
+  private clockInterval: any = null;
+  private isTick = true;
+  private birdInterval: any = null;
+
   // Jazz progression in Hz:
   // Chord 0: Fmaj7 (F2: 87.31, A3: 220.00, C4: 261.63, E4: 329.63)
   // Chord 1: Em7   (E2: 82.41, G3: 196.00, B3: 246.94, D4: 293.66)
@@ -253,16 +258,21 @@ class CozyAudioEngine {
       this.rainFilter?.frequency.linearRampToValueAtTime(900, now + 2);
       this.rainGain?.gain.linearRampToValueAtTime(0.6, now + 2);
       this.fireplaceGain?.gain.linearRampToValueAtTime(0.4, now + 2);
+      this.toggleBirds(false);
     } else if (weather === 'sunset') {
       // Moderated rain/room hum
       this.rainFilter?.frequency.linearRampToValueAtTime(450, now + 2);
       this.rainGain?.gain.linearRampToValueAtTime(0.2, now + 2);
       this.fireplaceGain?.gain.linearRampToValueAtTime(0.15, now + 2);
+      this.toggleBirds(false);
     } else {
       // Day - soft rain (outdoor mist) and low fire
       this.rainFilter?.frequency.linearRampToValueAtTime(300, now + 2);
       this.rainGain?.gain.linearRampToValueAtTime(0.1, now + 2);
       this.fireplaceGain?.gain.linearRampToValueAtTime(0.05, now + 2);
+      if (this.isPlaying) {
+        this.toggleBirds(true);
+      }
     }
   }
 
@@ -278,6 +288,12 @@ class CozyAudioEngine {
       // Start chord loop immediately and schedule chord changes
       this.playLofiChord();
       this.lofiInterval = setInterval(() => this.playLofiChord(), 6000);
+      
+      // Start ticking loop
+      this.toggleTicking(true);
+      
+      // Start birds if it's currently day
+      this.toggleBirds(true);
     } else {
       if (this.lofiInterval) {
         clearInterval(this.lofiInterval);
@@ -288,7 +304,132 @@ class CozyAudioEngine {
         try { osc.stop(); } catch (e) {}
       });
       this.activeOscillators = [];
+      
+      this.toggleTicking(false);
+      this.toggleBirds(false);
     }
+  }
+
+  toggleTicking(enable: boolean) {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+      this.clockInterval = null;
+    }
+    if (enable) {
+      this.clockInterval = setInterval(() => {
+        this.playClockTick(this.isTick);
+        this.isTick = !this.isTick;
+      }, 1000);
+    }
+  }
+
+  playClockTick(isTick: boolean) {
+    if (!this.ctx || !this.isPlaying || this.ctx.state === 'suspended') return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sine';
+    const freq = isTick ? 1200 : 950;
+    osc.frequency.setValueAtTime(freq, now);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(freq, now);
+    filter.Q.setValueAtTime(15, now);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.015, now + 0.001);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.mainGain!);
+
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
+  toggleBirds(enable: boolean) {
+    if (this.birdInterval) {
+      clearTimeout(this.birdInterval);
+      this.birdInterval = null;
+    }
+    if (enable) {
+      const triggerNext = () => {
+        if (!this.isPlaying) return;
+        this.playBirdChirp();
+        const delay = 12000 + Math.random() * 12000;
+        this.birdInterval = setTimeout(triggerNext, delay);
+      };
+      this.birdInterval = setTimeout(triggerNext, 4000);
+    }
+  }
+
+  playBirdChirp() {
+    if (!this.ctx || !this.isPlaying || this.ctx.state === 'suspended') return;
+    const now = this.ctx.currentTime;
+    const pulses = 2 + Math.floor(Math.random() * 2);
+    let startTime = now;
+
+    for (let i = 0; i < pulses; i++) {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2900 + Math.random() * 300, startTime);
+      osc.frequency.exponentialRampToValueAtTime(4600 + Math.random() * 400, startTime + 0.07);
+
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.008, startTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.07);
+
+      osc.connect(gain);
+      gain.connect(this.mainGain!);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.08);
+
+      startTime += 0.10 + Math.random() * 0.04;
+    }
+  }
+
+  playPageFlip() {
+    if (!this.ctx || !this.isPlaying || this.ctx.state === 'suspended') return;
+    const now = this.ctx.currentTime;
+    const bufferSize = this.ctx.sampleRate * 0.45;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    let lastOut = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      data[i] = (lastOut + (0.04 * white)) / 1.04;
+      lastOut = data[i];
+    }
+
+    const noiseSource = this.ctx.createBufferSource();
+    noiseSource.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(320, now);
+    filter.frequency.exponentialRampToValueAtTime(1100, now + 0.18);
+    filter.frequency.exponentialRampToValueAtTime(450, now + 0.4);
+    filter.Q.setValueAtTime(2.2, now);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.035, now + 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.mainGain!);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.45);
   }
 
   setVolume(val: number) {

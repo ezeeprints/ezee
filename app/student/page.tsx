@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import styles from './student.module.css';
 import StudentRoom from '@/app/components/StudentRoom';
 import PrintStudio from '@/app/components/dashboard/PrintStudio';
-import OrderHistory from '@/app/components/dashboard/OrderHistory';
+import MemoryLibrary from '@/app/components/dashboard/MemoryLibrary';
 import Notifications from '@/app/components/dashboard/Notifications';
 import Payments from '@/app/components/dashboard/Payments';
 import Settings from '@/app/components/dashboard/Settings';
@@ -14,11 +15,13 @@ import ProgressUI from '@/app/components/dashboard/ProgressUI';
 import EasterEggUI from '@/app/components/dashboard/EasterEggUI';
 import WeatherUI from '@/app/components/dashboard/WeatherUI';
 import { audio } from '@/app/components/AudioEngine';
+import { useMemorySystem } from '@/app/components/print/useMemorySystem';
 
 export type CameraFocus = 'desk' | 'library' | 'utilities';
 export type ActiveModal = 'none' | 'printer' | 'bookshelf' | 'mailbox' | 'wallet' | 'drawer' | 'clock' | 'desk' | 'plant' | 'cat' | 'window';
 
 export default function StudentDashboard() {
+  const { memory } = useMemorySystem();
   const [cameraFocus, setCameraFocus] = useState<CameraFocus>('desk');
   const [activeModal, setActiveModal] = useState<ActiveModal>('none');
   const [isNight, setIsNight] = useState(false);
@@ -46,13 +49,13 @@ export default function StudentDashboard() {
   const getCameraTransform = () => {
     switch (cameraFocus) {
       case 'library':
-        return 'translateX(0vw)'; // Viewport covers 0 to 100vw (Library is at 20vw)
+        return '0vw'; 
       case 'desk':
-        return 'translateX(-100vw)'; // Viewport covers 100vw to 200vw (Desk is at 100vw)
+        return '-100vw'; 
       case 'utilities':
-        return 'translateX(-200vw)'; // Viewport covers 200vw to 300vw (Utilities is at 220vw)
+        return '-200vw'; 
       default:
-        return 'translateX(-100vw)';
+        return '-100vw';
     }
   };
 
@@ -79,15 +82,19 @@ export default function StudentDashboard() {
     <div className={containerClass}>
       
       {/* The 300vw expansive room layer */}
-      <div 
+      <motion.div 
         className={styles.roomWorld} 
-        style={{ transform: getCameraTransform() }}
+        initial={false}
+        animate={{ x: getCameraTransform() }}
+        transition={{ type: 'spring', damping: 25, stiffness: 120, mass: 1.2 }}
+        style={{ display: 'flex', width: '300vw', height: '100vh', position: 'absolute', top: 0, left: 0 }}
       >
         <div className={styles.roomFloor} />
         
         {/* Pass interactions to the SVG Room */}
         <StudentRoom 
           isNight={isNight}
+          memory={memory}
           toggleNight={() => { audio.playFeedbackClick(); setIsNight(!isNight); }}
           onPrinterClick={() => handleObjectClick('utilities', 'printer')}
           onBookshelfClick={() => handleObjectClick('library', 'bookshelf')}
@@ -100,7 +107,7 @@ export default function StudentDashboard() {
           onCatClick={() => handleObjectClick('desk', 'cat')}
           onWindowClick={() => handleObjectClick('desk', 'window')}
         />
-      </div>
+      </motion.div>
 
       {/* Greetings / Ezi Desk Overlay */}
       {cameraFocus === 'desk' && activeModal === 'none' && (
@@ -165,8 +172,8 @@ export default function StudentDashboard() {
           <PrintStudio onClose={closeModal} />
         )}
 
-        {/* ORDER HISTORY */}
-        {activeModal === 'bookshelf' && <OrderHistory onClose={closeModal} />}
+        {/* MEMORY LIBRARY */}
+        {activeModal === 'bookshelf' && <MemoryLibrary onClose={closeModal} isNight={isNight} weather={weather} />}
 
         {/* NOTIFICATIONS */}
         {activeModal === 'mailbox' && <Notifications onClose={closeModal} />}

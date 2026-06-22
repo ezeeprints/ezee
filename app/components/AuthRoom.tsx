@@ -274,23 +274,9 @@ export default function AuthRoom({
         </div>
       )}
 
-      {/* Confetti (Success state) */}
+      {/* Transition effect (Success state) */}
       {state === 'success' && (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 }}>
-           {[...Array(20)].map((_, i) => (
-             <div key={i} style={{
-               position: 'absolute',
-               top: `${Math.random() * 50}%`,
-               left: `${Math.random() * 100}%`,
-               width: '8px',
-               height: '8px',
-               background: ['#D48A70', '#A9B59D', '#7A6D8C'][Math.floor(Math.random() * 3)],
-               borderRadius: Math.random() > 0.5 ? '50%' : '0',
-               animation: `float ${2 + Math.random() * 3}s ease-out forwards`,
-               opacity: 0
-             }} />
-           ))}
-        </div>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50, background: 'rgba(250, 247, 241, 0.2)', transition: 'background 2s ease-in-out' }} />
       )}
     </>
   );

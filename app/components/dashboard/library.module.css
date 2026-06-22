@@ -1,0 +1,436 @@
+.libraryContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background-size: cover;
+  transition: background 1.5s ease-in-out;
+}
+
+.libraryContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Background Texture Overlays */
+.paperOverlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: radial-gradient(circle, #000 10%, transparent 11%), radial-gradient(circle, #000 10%, transparent 11%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+  z-index: 1;
+}
+
+/* Shelf Row & Boards */
+.shelfRow {
+  position: relative;
+  width: 100%;
+  margin-bottom: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shelfItems {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 1100px;
+  min-height: 200px;
+  padding: 0 2rem;
+  z-index: 5;
+  gap: 1.5rem;
+}
+
+.woodBoard {
+  width: 100%;
+  max-width: 1150px;
+  height: 18px;
+  background: linear-gradient(to bottom, #8B5A2B, #5C3D1D);
+  border-radius: 4px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 2;
+  margin-top: -2px;
+  border: 1px solid #422a14;
+}
+
+.woodBoard::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  opacity: 0.12;
+  background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,0.15) 40px, rgba(0,0,0,0.15) 80px);
+  pointer-events: none;
+}
+
+/* Dust particles */
+.dustParticle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: floatDust 15s infinite linear;
+  filter: blur(0.5px);
+  z-index: 2;
+}
+
+@keyframes floatDust {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(1);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100px) translateX(60px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Steam rising */
+.steam {
+  position: absolute;
+  width: 15px;
+  height: 35px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, transparent 70%);
+  animation: rise 4.5s infinite ease-in-out;
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: 6;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-50px) scale(2.2) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+/* Ambient glows */
+.lampGlow {
+  position: absolute;
+  background: radial-gradient(circle, rgba(255, 214, 133, 0.3) 0%, transparent 70%);
+  animation: flicker 10s infinite alternate ease-in-out;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  z-index: 1;
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.08);
+  }
+}
+
+/* Sunbeams (Sunny Weather) */
+.sunRays {
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 120%;
+  height: 120%;
+  background: repeating-linear-gradient(
+    -35deg,
+    rgba(255, 245, 210, 0.08) 0px,
+    rgba(255, 245, 210, 0.08) 40px,
+    transparent 40px,
+    transparent 80px
+  );
+  pointer-events: none;
+  filter: blur(10px);
+  animation: driftRays 30s infinite alternate linear;
+  z-index: 1;
+}
+
+@keyframes driftRays {
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(3deg) scale(1.05); }
+}
+
+/* Rain Overlays (Rainy Weather) */
+.rainOverlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.raindrop {
+  position: absolute;
+  width: 1.5px;
+  height: 20px;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.4));
+  animation: fall 1.2s infinite linear;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-100px); }
+  100% { transform: translateY(110vh); }
+}
+
+/* Wind sway for plants */
+.plantLeaf {
+  transform-origin: bottom center;
+  animation: sway 6s infinite alternate ease-in-out;
+}
+
+@keyframes sway {
+  0% { transform: rotate(-2deg); }
+  100% { transform: rotate(2deg); }
+}
+
+/* Sleeping Cat */
+.sleepingCat {
+  animation: breathe 3.5s infinite ease-in-out;
+  transform-origin: center bottom;
+  cursor: pointer;
+}
+
+.sleepingCat:hover {
+  animation: wiggleTail 0.8s ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.04) scaleX(1.01); }
+}
+
+@keyframes wiggleTail {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-5deg) translateY(-2px); }
+  70% { transform: rotate(5deg) translateY(2px); }
+}
+
+/* Objects micro-animations */
+.memoryCapsule {
+  position: relative;
+  cursor: pointer;
+  perspective: 1000px;
+}
+
+.bookmark {
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+
+.memoryCapsule:hover .bookmark {
+  animation: wiggle 1s ease-in-out;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+.pageCorner {
+  transform-origin: bottom right;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.memoryCapsule:hover .pageCorner {
+  transform: rotate(-15deg) scale(1.1) translate(-2px, -2px);
+}
+
+/* Cozy Diary Modal Styles */
+.diaryOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26, 23, 20, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 2rem;
+  perspective: 2000px;
+}
+
+.diaryBook {
+  display: flex;
+  width: 90%;
+  max-width: 960px;
+  height: 580px;
+  background: #FAF7F1;
+  border-radius: 12px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(42,41,40,0.05);
+  overflow: hidden;
+  border: 12px solid #5C3D1D;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.diaryLeftPage, .diaryRightPage {
+  flex: 1;
+  padding: 3rem 2.5rem;
+  position: relative;
+  background: #FAF7F1;
+  display: flex;
+  flex-direction: column;
+}
+
+.diaryLeftPage {
+  border-right: 1.5px solid rgba(42, 41, 40, 0.15);
+  box-shadow: inset -10px 0 20px rgba(0,0,0,0.03);
+}
+
+.diaryRightPage {
+  border-left: 1.5px solid rgba(42, 41, 40, 0.15);
+  box-shadow: inset 10px 0 20px rgba(0,0,0,0.03);
+}
+
+/* Stamped Receipt Styling */
+.stampedReceipt {
+  border: 2px dashed rgba(122, 109, 140, 0.4);
+  padding: 1.5rem;
+  border-radius: 4px;
+  font-family: 'Space Grotesk', monospace;
+  color: #555;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  position: relative;
+  background: rgba(250, 247, 241, 0.6);
+}
+
+.stampedReceipt h3 {
+  font-family: 'Instrument Sans', sans-serif;
+  text-align: center;
+  letter-spacing: 0.1em;
+  color: #7A6D8C;
+  font-size: 1.1rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.stampedReceipt p {
+  margin: 0.5rem 0;
+}
+
+.stampedReceipt strong {
+  color: #2A2928;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(42, 41, 40, 0.1);
+  margin-bottom: 1rem;
+}
+
+/* Coffee Stain ring */
+.coffeeStain {
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  width: 130px;
+  height: 130px;
+  border: 5px solid rgba(139, 90, 43, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.coffeeStain::before {
+  content: '';
+  position: absolute;
+  top: 10px; left: 10px; right: 10px; bottom: 10px;
+  border: 1px solid rgba(139, 90, 43, 0.04);
+  border-radius: 50%;
+}
+
+/* Journal Writing Text */
+.journalText h3 {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #2A2928;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.journalText p {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #4A4540;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.closeDiaryBtn {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 0.8rem 1.8rem;
+  background: #2A2928;
+  color: #FAF7F1;
+  border: none;
+  border-radius: 30px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.closeDiaryBtn:hover {
+  background: #7A6D8C;
+  transform: translateY(-2px);
+}
+
+.diaryRibbon {
+  position: absolute;
+  top: 0;
+  right: 4rem;
+  width: 25px;
+  height: 90%;
+  background: #D48A70;
+  box-shadow: 2px 5px 10px rgba(0,0,0,0.15);
+  border-radius: 0 0 4px 4px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* Ezi Dusting Animation */
+.eziDusting {
+  animation: dustBook 2s infinite alternate ease-in-out;
+}
+
+@keyframes dustBook {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(-5deg); }
+  100% { transform: translateY(0) rotate(5deg); }
+}
+
+/* Ezi Sleeping Animation */
+.eziSleeping {
+  animation: sleepEzi 4s infinite ease-in-out;
+}
+
+@keyframes sleepEzi {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.97) translateY(2px); }
+}

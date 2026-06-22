@@ -341,7 +341,7 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
           shopName={shop.name}
           isNight={isNight}
           onComplete={() => {
-            trackOrder(pageCount, copies);
+            trackOrder(docName, docType, pageCount, copies, binding, shop.name, isNight);
             setPhase('done');
           }}
         />

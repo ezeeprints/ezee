@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './journey.module.css';
 
 interface TheJourneyProps {
@@ -195,6 +196,33 @@ function DiwaliLanterns() {
   );
 }
 
+// ─── RAMADAN LANTERNS ─────────────────────────────────────────────
+function RamadanLanterns() {
+  const positions = [10, 25, 40, 55, 70, 85];
+  return (
+    <svg
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '70px', pointerEvents: 'none', zIndex: 5 }}
+      viewBox="0 0 800 70"
+      preserveAspectRatio="none"
+    >
+      <path d={`M 0 10 Q 400 35 800 10`} fill="none" stroke="rgba(42,41,40,0.25)" strokeWidth="1.5" />
+      {positions.map((pct, i) => {
+        const x = (pct / 100) * 800;
+        const y = 10 + Math.sin((pct / 100) * Math.PI) * 14;
+        return (
+          <g key={i} transform={`translate(${x}, ${y})`}>
+            <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(42,41,40,0.4)" strokeWidth="1" />
+            <path d="M -6 8 Q 0 0 6 8 Z" fill="#C4956A" stroke="rgba(42,41,40,0.2)" strokeWidth="0.8" />
+            <polygon points="-6,8 6,8 4,26 -4,26" fill="rgba(250,247,241,0.9)" stroke="rgba(42,41,40,0.2)" strokeWidth="0.8" />
+            <rect x="-4" y="26" width="8" height="3" fill="#C4956A" rx="0.5" />
+            <circle cx="0" cy="17" r="4.5" fill="#F4D03F" className={styles.ramadanLantern} style={{ filter: 'drop-shadow(0 0 5px #F4D03F)' }} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ─── CHRISTMAS TWINKLES ──────────────────────────────────────────
 function ChristmasTwinkles({ tod }: { tod: string }) {
   const colors = ['#F4D03F', '#D48A70', '#A9B59D', '#7A6D8C', '#FAF7F1'];
@@ -298,7 +326,7 @@ function SeasonalDecor({ season, tod }: { season: Season; tod: string }) {
   if (season === 'diwali') return <DiwaliLanterns />;
   if (season === 'christmas') return <ChristmasTwinkles tod={tod} />;
   if (season === 'spring') return <SpringBlossoms />;
-  if (season === 'ramadan') return <DiwaliLanterns />;
+  if (season === 'ramadan') return <RamadanLanterns />;
   if (season === 'examWeek') return <ExamStickyNotes tod={tod} />;
   return null;
 }
@@ -864,10 +892,21 @@ export default function TheJourney({ docName, shopName, isNight, onClose }: TheJ
       <SeasonalDecor season={season} tod={tod} />
 
       {/* Chapters */}
-      {chapter === 0 && <ChapterArrival docName={docName} tod={tod} />}
-      {chapter === 1 && <ChapterPreparation tod={tod} />}
-      {chapter === 2 && <ChapterCare docName={docName} tod={tod} />}
-      {chapter === 3 && <ChapterRest tod={tod} onClose={onClose} />}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={chapter} 
+          initial={{ opacity: 0, filter: 'blur(4px)' }} 
+          animate={{ opacity: 1, filter: 'blur(0px)' }} 
+          exit={{ opacity: 0, filter: 'blur(4px)' }} 
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          style={{ width: '100%', height: '100%' }}
+        >
+          {chapter === 0 && <ChapterArrival docName={docName} tod={tod} />}
+          {chapter === 1 && <ChapterPreparation tod={tod} />}
+          {chapter === 2 && <ChapterCare docName={docName} tod={tod} />}
+          {chapter === 3 && <ChapterRest tod={tod} onClose={onClose} />}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Chapter dots — ambient, not progress */}
       <div className={styles.chapterDots}>

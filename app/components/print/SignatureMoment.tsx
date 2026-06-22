@@ -118,11 +118,11 @@ export default function SignatureMoment({ shopName, isNight, onComplete }: Signa
   const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
-    // Paper airplane animation takes ~4s
+    // Paper airplane animation takes ~4s (reduced for faster transition)
     const t = setTimeout(() => {
       setShowMessage(true);
-      setTimeout(onComplete, 3000);
-    }, 4200);
+      setTimeout(onComplete, 500);
+    }, 500);
     return () => clearTimeout(t);
   }, [onComplete]);
 

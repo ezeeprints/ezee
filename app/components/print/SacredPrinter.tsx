@@ -151,7 +151,7 @@ export default function SacredPrinter({ isNight, copies, docName, onDone }: Sacr
   // Simulate printing — slow, meaningful
   useEffect(() => {
     progressRef.current = 0;
-    const duration = Math.min(4000 + copies * 30, 12000);
+    const duration = Math.max(copies * 8000, 8000); // 8 seconds per page
     const interval = 120;
     const steps = duration / interval;
     const increment = 100 / steps;
@@ -186,7 +186,13 @@ export default function SacredPrinter({ isNight, copies, docName, onDone }: Sacr
     'Almost there…',
     'One more moment…',
   ];
-  const msgIndex = Math.floor((progress / 100) * (waitMessages.length - 1));
+  const msgIndex = Math.min(Math.floor((progress / 100) * (waitMessages.length - 1)), waitMessages.length - 1);
+
+  let eziState: 'idle' | 'waiting' | 'success' | 'error' | 'makingCoffee' | 'organizingPapers' | 'adjustingBookmarks' | 'reading' = 'organizingPapers';
+  if (progress < 20) eziState = 'makingCoffee';
+  else if (progress < 80) eziState = 'organizingPapers';
+  else if (progress < 100) eziState = 'adjustingBookmarks';
+  else eziState = 'success';
 
   return (
     <div
@@ -217,9 +223,9 @@ export default function SacredPrinter({ isNight, copies, docName, onDone }: Sacr
       {/* Cloud shadows */}
       <div className={styles.cloudShadow} />
 
-      {/* Ezi waiting — reading */}
-      <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', width: '80px', height: '110px' }}>
-        <EziPrinter state="reading" isNight={isNight} copies={copies} />
+      {/* Ezi interacting with the print job */}
+      <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', width: '80px', height: '110px', transition: 'all 0.5s' }}>
+        <EziPrinter state={eziState} isNight={isNight} copies={copies} />
       </div>
 
       {/* Bird flying overhead */}

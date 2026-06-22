@@ -3,9 +3,11 @@
 import React from 'react';
 import styles from '../student/student.module.css';
 import EziCharacter from './EziCharacter';
+import { MemoryState } from './print/useMemorySystem';
 
 interface StudentRoomProps {
   isNight: boolean;
+  memory?: MemoryState;
   toggleNight: () => void;
   onPrinterClick: () => void;
   onBookshelfClick: () => void;
@@ -19,8 +21,95 @@ interface StudentRoomProps {
   onWindowClick: () => void;
 }
 
+const bookDefinitions = [
+  // Shelf 1 (top, line y = 150)
+  { x: 40, y: 50, w: 20, h: 100, fill: "#7A6D8C", rotate: 0 },
+  { x: 65, y: 70, w: 25, h: 80, fill: "#D48A70", rotate: 0 },
+  { x: 95, y: 40, w: 18, h: 110, fill: "#A9B59D", rotate: 0 },
+  { x: 120, y: 45, w: 22, h: 105, fill: "#2A2928", rotate: 12 }, // tilted
+  { x: 155, y: 60, w: 24, h: 90, fill: "#C4956A", rotate: 0 },
+
+  // Shelf 2 (middle, line y = 300)
+  { x: 40, y: 200, w: 22, h: 100, fill: "#A9B59D", rotate: 0 },
+  { x: 67, y: 220, w: 28, h: 80, fill: "#7A6D8C", rotate: 0 },
+  { x: 100, y: 190, w: 16, h: 110, fill: "#D48A70", rotate: -15 }, // tilted
+  { x: 125, y: 210, w: 20, h: 90, fill: "#2A2928", rotate: 0 },
+
+  // Shelf 3 (bottom, line y = 450)
+  { x: 40, y: 350, w: 26, h: 100, fill: "#2A2928", rotate: 0 },
+  { x: 72, y: 370, w: 22, h: 80, fill: "#C4956A", rotate: 5 },
+  { x: 100, y: 340, w: 20, h: 110, fill: "#FAF7F1", rotate: 0 }
+];
+
+function DiwaliLights() {
+  return (
+    <svg width="400" height="40" viewBox="0 0 400 40" style={{ position: 'absolute', top: '-18vh', left: '0', width: '40vw', zIndex: 10, pointerEvents: 'none' }}>
+      <path d="M 0 5 Q 100 25 200 5 Q 300 25 400 5" fill="none" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+      {[40, 100, 160, 240, 300, 360].map((x, idx) => {
+        const y = 5 + Math.sin((x / 200) * Math.PI) * 12;
+        return (
+          <g key={idx} transform={`translate(${x}, ${y})`}>
+            <line x1="0" y1="0" x2="0" y2="6" stroke="#2A2928" strokeWidth="1" />
+            <path d="M -6 6 C -6 14, 6 14, 6 6 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="0.8" />
+            <circle cx="0" cy="2" r="2.5" fill="#F4D03F" style={{ animation: 'pulse 1.5s infinite alternate' }} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function ChristmasLights() {
+  const colors = ['#EA4335', '#34A853', '#F4D03F', '#4285F4'];
+  return (
+    <svg width="400" height="40" viewBox="0 0 400 40" style={{ position: 'absolute', top: '-18vh', left: '0', width: '40vw', zIndex: 10, pointerEvents: 'none' }}>
+      <path d="M 0 5 Q 100 20 200 5 Q 300 20 400 5" fill="none" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+      {Array.from({ length: 12 }).map((_, idx) => {
+        const x = (idx / 11) * 400;
+        const y = 5 + Math.sin((x / 200) * Math.PI) * 11;
+        const color = colors[idx % colors.length];
+        return (
+          <circle 
+            key={idx} 
+            cx={x} 
+            cy={y + 4} 
+            r="3.5" 
+            fill={color} 
+            style={{ 
+              animation: 'twinkle 1.5s infinite', 
+              animationDelay: `${idx * 0.15}s`,
+              filter: `drop-shadow(0 0 4px ${color})`
+            }} 
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function RamadanLanternsDecoration() {
+  return (
+    <svg width="400" height="60" viewBox="0 0 400 60" style={{ position: 'absolute', top: '-18vh', left: '0', width: '40vw', zIndex: 10, pointerEvents: 'none' }}>
+      <path d="M 0 5 Q 100 18 200 5 Q 300 18 400 5" fill="none" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+      {[50, 130, 210, 290, 370].map((x, idx) => {
+        const y = 5 + Math.sin((x / 200) * Math.PI) * 9;
+        return (
+          <g key={idx} transform={`translate(${x}, ${y})`}>
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#2A2928" strokeWidth="1" />
+            <polygon points="-5,8 5,8 3,14 -3,14" fill="#FAF7F1" stroke="#2A2928" strokeWidth="0.8" />
+            <rect x="-4" y="14" width="8" height="10" rx="1" fill="#7A6D8C" stroke="#2A2928" strokeWidth="0.8" />
+            <polygon points="-3,24 3,24 5,28 -5,28" fill="#FAF7F1" stroke="#2A2928" strokeWidth="0.8" />
+            <circle cx="0" cy="19" r="2.5" fill="#F4D03F" style={{ animation: 'pulse 2s infinite alternate' }} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export default function StudentRoom({
   isNight,
+  memory,
   toggleNight,
   onPrinterClick,
   onBookshelfClick,
@@ -34,8 +123,17 @@ export default function StudentRoom({
   onWindowClick
 }: StudentRoomProps) {
 
+  const date = new Date();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  let currentSeason: 'diwali' | 'christmas' | 'ramadan' | 'normal' = 'normal';
+  if (month === 2) currentSeason = 'ramadan';
+  else if (month === 9 || (month === 10 && day <= 15)) currentSeason = 'diwali';
+  else if (month === 11) currentSeason = 'christmas';
 
-
+  const notes = memory?.stickyNotes || [];
+  const mugsCount = memory?.coffeeMugs ?? 0;
 
   return (
     <>
@@ -74,20 +172,25 @@ export default function StudentRoom({
             <line x1="20" y1="300" x2="280" y2="300" stroke="#2A2928" strokeWidth="4" />
             <line x1="20" y1="450" x2="280" y2="450" stroke="#2A2928" strokeWidth="4" />
             
-            {/* Books (Order History representation) */}
-            <rect x="40" y="50" width="20" height="100" fill="#7A6D8C" />
-            <rect x="65" y="70" width="30" height="80" fill="#D48A70" />
-            <rect x="100" y="40" width="15" height="110" fill="#A9B59D" />
-            
-            {/* Tilted book */}
-            <g transform="translate(130, 40) rotate(15)">
-              <rect x="0" y="0" width="25" height="100" fill="#2A2928" />
-              <rect x="5" y="10" width="15" height="80" fill="#FAF7F1" />
-            </g>
+            {/* Dynamic Books based on print history */}
+            {bookDefinitions.slice(0, memory?.books ?? 1).map((b, idx) => (
+              <g key={idx} transform={b.rotate ? `translate(${b.x}, ${b.y}) rotate(${b.rotate})` : undefined}>
+                <rect 
+                  x={b.rotate ? 0 : b.x} 
+                  y={b.rotate ? 0 : b.y} 
+                  width={b.w} 
+                  height={b.h} 
+                  fill={b.fill} 
+                  stroke="#2A2928"
+                  strokeWidth="2"
+                  rx="1"
+                />
+              </g>
+            ))}
 
-            {/* Middle shelf */}
-            <rect x="50" y="220" width="80" height="80" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
-            <circle cx="90" cy="260" r="20" fill="#A9B59D" />
+            {/* Decorative items on middle shelf */}
+            <rect x="180" y="210" width="80" height="80" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
+            <circle cx="220" cy="250" r="20" fill="#A9B59D" />
           </svg>
         </div>
       </div>
@@ -111,11 +214,45 @@ export default function StudentRoom({
           </svg>
         </div>
 
-        {/* Sticky Notes */}
-        <div style={{ position: 'absolute', top: '10vh', right: '5vw', width: '80px', height: '80px', zIndex: 2 }}>
-           <div className={styles.wiggle} style={{ position: 'absolute', top: 0, left: 0, width: '40px', height: '40px', background: '#F4D03F', transform: 'rotate(5deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
-           <div className={styles.wiggle} style={{ position: 'absolute', top: '20px', left: '30px', width: '40px', height: '40px', background: '#A9B59D', transform: 'rotate(-10deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
+        {/* Dynamic Sticky Notes on Wall */}
+        <div style={{ position: 'absolute', top: '10vh', right: '5vw', display: 'flex', gap: '15px', zIndex: 2 }}>
+           {notes.length === 0 ? (
+             <>
+               <div className={styles.wiggle} style={{ width: '40px', height: '40px', background: '#F4D03F', transform: 'rotate(5deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
+               <div className={styles.wiggle} style={{ width: '40px', height: '40px', background: '#A9B59D', transform: 'rotate(-10deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }} />
+             </>
+           ) : (
+             notes.map((note) => (
+               <div 
+                 key={note.id}
+                 className={styles.wiggle} 
+                 style={{ 
+                   width: '45px', 
+                   height: '45px', 
+                   background: note.color || '#F4D03F', 
+                   transform: `rotate(${note.rotate}deg)`, 
+                   boxShadow: '2px 2px 6px rgba(0,0,0,0.15)',
+                   padding: '4px',
+                   display: 'flex',
+                   flexDirection: 'column',
+                   justifyContent: 'center',
+                   alignItems: 'center',
+                   overflow: 'hidden'
+                 }}
+                 title={note.text}
+               >
+                 <span style={{ fontSize: '5px', fontFamily: 'Space Grotesk', color: '#2A2928', textAlign: 'center', lineHeight: 1.1, whiteSpace: 'normal', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', wordBreak: 'break-all' }}>
+                   {note.text}
+                 </span>
+               </div>
+             ))
+           )}
         </div>
+
+        {/* Seasonal Decorations hung across top wall of window */}
+        {currentSeason === 'diwali' && <DiwaliLights />}
+        {currentSeason === 'christmas' && <ChristmasLights />}
+        {currentSeason === 'ramadan' && <RamadanLanternsDecoration />}
 
         {/* Large Window */}
         <div 
@@ -176,8 +313,27 @@ export default function StudentRoom({
         >
           <svg width="100%" height="100%" viewBox="0 0 100 150">
              <path d="M 30 150 L 70 150 L 80 100 L 20 100 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="4" />
-             <path d="M 50 100 Q 20 70 10 40 Q 30 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
-             <path d="M 50 100 Q 80 70 90 40 Q 70 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 4s infinite alternate-reverse' }} />
+             {(memory?.plantStage === 1) && (
+               <path d="M 50 100 Q 30 80 30 65 Q 40 65 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
+             )}
+             {(memory?.plantStage === 2 || !memory?.plantStage) && (
+               <>
+                 <path d="M 50 100 Q 20 70 10 40 Q 30 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
+                 <path d="M 50 100 Q 80 70 90 40 Q 70 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 4s infinite alternate-reverse' }} />
+               </>
+             )}
+             {(memory?.plantStage === 3) && (
+               <>
+                 <path d="M 50 100 Q 20 70 10 40 Q 30 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3s infinite alternate' }} />
+                 <path d="M 50 100 Q 80 70 90 40 Q 70 40 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 4s infinite alternate-reverse' }} />
+                 <path d="M 50 100 Q 50 60 50 30 Q 60 30 50 90" fill="#8BA382" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 5s infinite alternate' }} />
+                 <path d="M 50 100 Q 35 60 20 50 Q 35 45 50 90" fill="#8BA382" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 4.5s infinite alternate' }} />
+                 <path d="M 50 100 Q 65 60 80 50 Q 65 45 50 90" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" style={{ animation: 'sway 3.5s infinite alternate-reverse' }} />
+                 <circle cx="20" cy="45" r="4" fill="#D48A70" stroke="#2A2928" strokeWidth="1" />
+                 <circle cx="80" cy="45" r="4" fill="#D48A70" stroke="#2A2928" strokeWidth="1" />
+                 <circle cx="50" cy="25" r="4" fill="#D48A70" stroke="#2A2928" strokeWidth="1" />
+               </>
+             )}
           </svg>
         </div>
 
@@ -190,15 +346,56 @@ export default function StudentRoom({
           </svg>
         </div>
 
-        {/* Coffee Cup */}
-        <div className={styles.interactiveObject} style={{ position: 'absolute', bottom: '20px', left: '30vw', width: '30px', height: '40px', zIndex: 12 }}>
-          <svg width="100%" height="100%" viewBox="0 0 50 50" style={{ overflow: 'visible' }}>
-             <path d="M 10 20 L 10 50 L 30 50 L 30 20 Z" fill="#FAF7F1" stroke="#2A2928" strokeWidth="2" />
-             <path d="M 30 25 Q 40 25 40 35 Q 40 45 30 45" fill="none" stroke="#FAF7F1" strokeWidth="3" />
-             {/* Steam */}
-             <path d="M 15 10 Q 10 0 20 -10" fill="none" stroke="#FAF7F1" strokeWidth="2" style={{ animation: 'rise 2s infinite ease-in' }} />
-          </svg>
-        </div>
+        {/* Dynamic Coffee Mugs (based on print history / visits) */}
+        {Array.from({ length: Math.max(1, mugsCount) }).map((_, idx) => {
+          const rotate = idx * 8 - 4;
+          return (
+            <div 
+              key={idx} 
+              className={styles.interactiveObject} 
+              style={{ 
+                position: 'absolute', 
+                bottom: '20px', 
+                left: `${28 + (idx * 2)}vw`, 
+                width: '30px', 
+                height: '40px', 
+                zIndex: 12 + idx,
+                transform: `rotate(${rotate}deg) translateY(${idx * 1.5}px)`
+              }}
+            >
+              <svg width="100%" height="100%" viewBox="0 0 50 50" style={{ overflow: 'visible' }}>
+                 <path d="M 10 20 L 10 50 L 30 50 L 30 20 Z" fill={idx % 2 === 0 ? "#FAF7F1" : "#EAE4DD"} stroke="#2A2928" strokeWidth="2" />
+                 <path d="M 30 25 Q 40 25 40 35 Q 40 45 30 45" fill="none" stroke={idx % 2 === 0 ? "#FAF7F1" : "#EAE4DD"} strokeWidth="3" />
+                 {idx === Math.max(1, mugsCount) - 1 && (
+                   <path d="M 15 10 Q 10 0 20 -10" fill="none" stroke="#FAF7F1" strokeWidth="2" style={{ animation: 'rise 2s infinite ease-in' }} />
+                 )}
+              </svg>
+            </div>
+          );
+        })}
+
+        {/* Exam Season Clutter on Desk Surface */}
+        {memory?.isExamSeason && (
+          <>
+            {/* Textbook stack on desk */}
+            <div style={{ position: 'absolute', bottom: '20px', left: '6vw', width: '80px', height: '40px', zIndex: 6 }}>
+              <svg width="100%" height="100%" viewBox="0 0 80 40">
+                <rect x="0" y="24" width="55" height="10" fill="#7A6D8C" rx="2" stroke="#2A2928" strokeWidth="1.5" />
+                <rect x="5" y="15" width="52" height="9" fill="#A9B59D" rx="2" stroke="#2A2928" strokeWidth="1.5" />
+                <rect x="2" y="8" width="48" height="8" fill="#FAF7F1" rx="1" stroke="#2A2928" strokeWidth="1.5" />
+              </svg>
+            </div>
+            {/* Scattered worksheets */}
+            <div style={{ position: 'absolute', bottom: '20px', right: '15vw', zIndex: 6, transform: 'rotate(-8deg)' }}>
+              <svg width="45" height="30" viewBox="0 0 45 30">
+                <rect x="2" y="2" width="40" height="26" fill="#FAF7F1" stroke="#2A2928" strokeWidth="1.5" rx="1" />
+                <line x1="8" y1="8" x2="32" y2="8" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+                <line x1="8" y1="14" x2="35" y2="14" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+                <line x1="8" y1="20" x2="28" y2="20" stroke="rgba(42,41,40,0.3)" strokeWidth="1" />
+              </svg>
+            </div>
+          </>
+        )}
 
         {/* Tiny Cat */}
         <div 

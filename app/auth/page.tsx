@@ -38,8 +38,8 @@ export default function AuthPage() {
         setZoomIn(true);
         setTimeout(() => {
           router.push('/student');
-        }, 1500);
-      }, 3000);
+        }, 500);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [authState, router]);
