@@ -281,6 +281,17 @@ export default function StudentRoom({
             <g style={{ transformOrigin: 'top right', animation: 'sway 8s infinite alternate-reverse ease-in-out' }}>
               <path d="M 400 0 Q 350 150 380 300 L 400 300 Z" fill="#EAE4DD" opacity="0.9" />
             </g>
+
+            {/* Snow flurries (Christmas only) */}
+            {currentSeason === 'christmas' && [
+              {cx: 60, cy: 60}, {cx: 150, cy: 30}, {cx: 280, cy: 80}, {cx: 340, cy: 45},
+              {cx: 100, cy: 140}, {cx: 230, cy: 110}, {cx: 370, cy: 130}, {cx: 50, cy: 200},
+              {cx: 180, cy: 220}, {cx: 310, cy: 190},
+            ].map((s, i) => (
+              <circle key={i} cx={s.cx} cy={s.cy} r="3.5" fill="#FFFFFF" opacity="0.7"
+                style={{ animation: `float ${4 + i * 0.5}s infinite alternate ease-in-out`, animationDelay: `${i * 0.3}s` }}
+              />
+            ))}
           </svg>
         </div>
 
@@ -343,6 +354,23 @@ export default function StudentRoom({
             <rect x="10" y="20" width="80" height="50" fill="#7A6D8C" rx="5" />
             <path d="M 10 35 L 50 50 L 90 35 L 90 25 L 10 25 Z" fill="#D48A70" />
             <circle cx="50" cy="50" r="5" fill="#EAE4DD" />
+          </svg>
+        </div>
+
+        {/* Pencil Holder cup */}
+        <div style={{ position: 'absolute', bottom: '20px', right: '24vw', width: '32px', height: '44px', zIndex: 11 }}>
+          <svg width="100%" height="100%" viewBox="0 0 40 55" style={{ overflow: 'visible' }}>
+            {/* Cup */}
+            <path d="M 5 18 L 7 50 L 33 50 L 35 18 Z" fill="#EAE4DD" stroke="#2A2928" strokeWidth="2" />
+            {/* Cup rim */}
+            <rect x="3" y="14" width="34" height="6" fill="#D48A70" stroke="#2A2928" strokeWidth="1.5" rx="1" />
+            {/* Pencils */}
+            <line x1="12" y1="2" x2="12" y2="18" stroke="#F4D03F" strokeWidth="4" strokeLinecap="round" />
+            <polygon points="10,2 14,2 12,-4" fill="#FAF7F1" stroke="#2A2928" strokeWidth="0.8" />
+            <line x1="20" y1="0" x2="20" y2="18" stroke="#A9B59D" strokeWidth="4" strokeLinecap="round" />
+            <polygon points="18,0 22,0 20,-6" fill="#FAF7F1" stroke="#2A2928" strokeWidth="0.8" />
+            <line x1="28" y1="5" x2="28" y2="18" stroke="#D48A70" strokeWidth="4" strokeLinecap="round" />
+            <polygon points="26,5 30,5 28,-1" fill="#FAF7F1" stroke="#2A2928" strokeWidth="0.8" />
           </svg>
         </div>
 

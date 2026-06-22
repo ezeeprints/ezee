@@ -1,0 +1,196 @@
+.observatoryContainer {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #2A2928; /* Soft Charcoal */
+  color: #F5EFE7; /* Paper Cream */
+  font-family: 'Cabinet Grotesk', sans-serif;
+  user-select: none;
+}
+
+/* Ambient Environment */
+.dustParticle {
+  position: absolute;
+  background-color: rgba(245, 239, 231, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 0 4px rgba(245, 239, 231, 0.2);
+}
+
+.rainDrop {
+  position: absolute;
+  width: 2px;
+  height: 30px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.3));
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes curtainSway {
+  0% { transform: skewX(0deg); }
+  50% { transform: skewX(2deg); }
+  100% { transform: skewX(0deg); }
+}
+.curtain {
+  position: absolute;
+  top: 0;
+  width: 15vw;
+  height: 100vh;
+  background: rgba(139, 90, 43, 0.9);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 20px 0 50px rgba(0,0,0,0.5);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.curtainLeft {
+  left: 0;
+  border-right: 5px solid rgba(0,0,0,0.5);
+  animation: swayLeft 12s ease-in-out infinite;
+  transform-origin: top left;
+}
+
+.curtainRight {
+  right: 0;
+  border-left: 5px solid rgba(0,0,0,0.5);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.8), -20px 0 50px rgba(0,0,0,0.5);
+  animation: swayRight 14s ease-in-out infinite;
+  transform-origin: top right;
+}
+
+@keyframes swayLeft {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1deg); }
+}
+
+@keyframes swayRight {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-1deg); }
+}
+
+/* UI Elements */
+.roomNav {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.5rem;
+  z-index: 50;
+}
+
+.navButton {
+  background: rgba(245, 239, 231, 0.05); /* Paper Cream low opacity */
+  border: 1px solid rgba(245, 239, 231, 0.1);
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  color: #F5EFE7;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.navButton:hover {
+  background: rgba(245, 239, 231, 0.15);
+  border-color: rgba(245, 239, 231, 0.3);
+}
+
+.navButton.active {
+  background: rgba(212, 175, 55, 0.2); /* Warm Brass */
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #D4AF37;
+}
+
+/* Tooltips */
+.tooltip {
+  position: absolute;
+  background: #F5EFE7;
+  color: #2A2928;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.8rem;
+  font-style: italic;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  pointer-events: none;
+  z-index: 100;
+  border: 1px solid rgba(92, 61, 29, 0.2);
+}
+
+/* Specific Zones */
+.zoneContainer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 300vw; /* 3 zones wide */
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zone {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Clock */
+.wallClock {
+  position: absolute;
+  top: 3rem;
+  right: 18vw;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #5C3D1D;
+  background: #F5EFE7;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.clockFace {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.clockHand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom;
+  background: #2A2928;
+  border-radius: 2px;
+}
+
+.hourHand {
+  width: 4px;
+  height: 25px;
+  margin-left: -2px;
+}
+
+.minuteHand {
+  width: 2px;
+  height: 40px;
+  margin-left: -1px;
+}
+
+.secondHand {
+  width: 1px;
+  height: 45px;
+  margin-left: -0.5px;
+  background: #800020; /* Dusty Plum / Red */
+}

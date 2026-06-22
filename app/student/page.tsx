@@ -27,15 +27,22 @@ export default function StudentDashboard() {
   const [isNight, setIsNight] = useState(false);
   const [weather, setWeather] = useState<'sunny' | 'rainy' | 'sunset' | 'midnight'>('sunny');
 
-  // Derive greeting based on time of day, weather, and night mode
-  const greetings = (() => {
-    if (weather === 'rainy' || weather === 'midnight') {
-      return "Perfect weather for printing notes ☔";
-    }
-    if (isNight) {
-      return "Still studying? I'll stay with you.";
-    }
-    return "Ready for another productive day?";
+  // Context-aware quiet companionship quotes
+  const getQuietQuote = (() => {
+    const hour = new Date().getHours();
+    const isLate = hour >= 22 || hour <= 5;
+    const isMorning = hour >= 6 && hour <= 10;
+    const isGolden = hour >= 17 && hour <= 20;
+
+    if (weather === 'midnight') return "Moon\'s out. Cat is somewhere around.";
+    if (weather === 'rainy') return "Rain sounds nice today.";
+    if (weather === 'sunset') return "Looks peaceful tonight.";
+    if (isLate) return "Still here? I\'ll stay.";
+    if (isMorning) return "Morning. Coffee\'s still warm.";
+    if (isGolden) return "Golden hour. Take your time.";
+    if (memory.isExamSeason) return "Busy season. I\'m here.";
+    if (isNight) return "Good night.";
+    return "Quiet day.";
   })();
 
   // Ambient sound (resume from auth if enabled)
@@ -109,18 +116,30 @@ export default function StudentDashboard() {
         />
       </motion.div>
 
-      {/* Greetings / Ezi Desk Overlay */}
+      {/* Quiet desk note — Ezi's little paper message */}
       {cameraFocus === 'desk' && activeModal === 'none' && (
-        <div style={{
-          position: 'absolute', top: '15vh', left: '50%', transform: 'translateX(-50%)',
-          background: '#FAF7F1', padding: '1.5rem 3rem', borderRadius: '50px',
-          boxShadow: '0 10px 30px rgba(42, 41, 40, 0.05)', border: '2px solid rgba(42, 41, 40, 0.1)',
-          animation: 'rise 0.5s ease-out forwards', zIndex: 100, textAlign: 'center'
-        }}>
-          <p style={{ fontFamily: 'Instrument Sans', fontSize: '1.4rem', color: '#7A6D8C', margin: 0 }}>
-            {greetings}
+        <motion.div
+          initial={{ opacity: 0, y: 8, rotate: -1 }}
+          animate={{ opacity: 1, y: 0, rotate: -1 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ delay: 0.3, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+          style={{
+            position: 'absolute', top: '14vh', left: '50%', transform: 'translateX(-50%) rotate(-1deg)',
+            background: '#FAF7F1',
+            padding: '0.9rem 2rem',
+            boxShadow: '1px 4px 14px rgba(42,41,40,0.1)',
+            border: '1px solid rgba(42,41,40,0.08)',
+            borderRadius: '2px',
+            zIndex: 100, textAlign: 'center',
+            // Folded corner effect
+          }}
+        >
+          {/* Washi tape */}
+          <div style={{ position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)', width: '55px', height: '18px', background: 'rgba(212,138,112,0.38)', borderRadius: '2px' }} />
+          <p style={{ fontFamily: 'Instrument Sans', fontSize: '1.1rem', color: 'rgba(42,41,40,0.65)', margin: 0, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+            {getQuietQuote}
           </p>
-        </div>
+        </motion.div>
       )}
 
       {cameraFocus !== 'desk' && activeModal === 'none' && (

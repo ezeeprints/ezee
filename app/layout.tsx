@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./universe/universe.css";
+import { UniverseProvider } from "./universe/UniverseProvider";
+import InkSpirit from "./universe/components/InkSpirit";
 
 export const metadata: Metadata = {
   title: "EZEE — Print. Study. Repeat.",
@@ -32,7 +35,12 @@ export default function RootLayout({
         {/* Fontshare for Cabinet Grotesk */}
         <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,400,900&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        <UniverseProvider>
+          {children}
+          <InkSpirit />
+        </UniverseProvider>
+      </body>
     </html>
   );
 }

@@ -1,90 +1,299 @@
 'use client';
 
-import React from 'react';
-import styles from '../../student/student.module.css';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useMemorySystem } from '../print/useMemorySystem';
 
 interface ProgressUIProps {
   onClose: () => void;
 }
 
-export default function ProgressUI({ onClose }: ProgressUIProps) {
-  const journalEntries = [
-    { date: 'Monsoon Evening', text: 'Placed the pot near the desk. It likes the sound of the rain.' },
-    { date: 'Midnight Study', text: 'A small sprout turned towards the lamp while you were reading.' },
-    { date: 'Golden Hour', text: 'Ezi watered the soil. Two tiny new leaves have unfurled.' },
-    { date: 'Quiet Afternoon', text: 'It stands quietly, breathing in the warmth of the sun.' }
-  ];
-
-  return (
-    <div className={styles.paperModal} style={{ width: '580px', maxWidth: '95vw', padding: '3.5rem 3rem' }}>
-      <button className={styles.closeBtn} onClick={onClose} aria-label="Close Plant Journal">×</button>
-      
-      {/* Decorative leaf sketch on top center of page */}
-      <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%) rotate(5deg)', width: '80px', height: '26px', background: 'rgba(169, 181, 157, 0.35)', border: '1px solid rgba(0,0,0,0.03)' }} />
-
-      <h2 className={styles.modalHeader}>A Quiet Journal</h2>
-
-      <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
-        {/* Left Side: Growth Visual (Potted Plant growing illustration) */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: '1.5rem',
-          textAlign: 'center'
-        }}>
-          {/* Handdrawn Potted plant representation */}
-          <svg width="100" height="150" viewBox="0 0 100 150" style={{ overflow: 'visible' }}>
-            {/* The Pot */}
-            <path d="M 30 130 L 70 130 L 75 90 L 25 90 Z" fill="#D48A70" stroke="#2A2928" strokeWidth="3" />
-            
-            {/* The Stem */}
-            <path d="M 50 90 Q 45 40 50 15" fill="none" stroke="#2A2928" strokeWidth="4" />
-            
-            {/* Leaves growing */}
-            <path d="M 50 70 Q 20 60 30 45 Q 45 55 50 70" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" />
-            <path d="M 50 50 Q 80 40 70 25 Q 55 35 50 50" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" />
-            <path d="M 50 25 Q 35 15 45 5 Q 55 10 50 25" fill="#A9B59D" stroke="#2A2928" strokeWidth="2" />
-            
-            {/* Ambient dust */}
-            <circle cx="80" cy="20" r="3" fill="#A9B59D" opacity="0.6" />
-            <circle cx="20" cy="40" r="2" fill="#D48A70" opacity="0.4" />
-            <circle cx="70" cy="80" r="1.5" fill="#A9B59D" opacity="0.5" />
-          </svg>
-        </div>
-
-        {/* Right Side: Diary Entries */}
-        <div style={{ flex: 1.2, fontFamily: 'Instrument Sans' }}>
-          <p style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#7A6D8C', textTransform: 'uppercase', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>
-            Ezi&apos;s Observations
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
-            {journalEntries.map((entry, idx) => (
-              <div key={idx} style={{ borderBottom: '1px dotted rgba(42,41,40,0.15)', paddingBottom: '0.8rem' }}>
-                <div style={{ color: '#7A6D8C', fontSize: '0.75rem', fontFamily: 'Space Grotesk', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
-                  {entry.date}
-                </div>
-                <div style={{ fontFamily: 'Instrument Sans', fontSize: '0.95rem', color: '#2A2928', lineHeight: '1.4' }}>
-                  {entry.text}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{
-            marginTop: '1rem',
-            fontFamily: 'Instrument Sans',
-            fontSize: '0.85rem',
-            color: '#7A6D8C',
-            fontStyle: 'italic'
-          }}>
-            &quot;It breathes softly alongside your books.&quot;
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+interface ScrapbookMemory {
+  id: string;
+  icon: string;
+  title: string;
+  caption: string;
+  dateNote: string;
+  rotation: number;
+  bgColor: string;
+  unlocked: boolean;
 }
 
+function buildMemories(memory: ReturnType<typeof useMemorySystem>['memory']): ScrapbookMemory[] {
+  const hour = new Date().getHours();
+  const isLate = hour >= 22 || hour <= 5;
+
+  return [
+    {
+      id: 'mem-study',
+      icon: '📚',
+      title: 'Study Sessions',
+      caption: 'The nights blur together after a while. But the stack of notes stays.',
+      dateNote: `${memory.visits} visits`,
+      rotation: -2,
+      bgColor: '#EAE4DD',
+      unlocked: memory.visits >= 2,
+    },
+    {
+      id: 'mem-latenight',
+      icon: '☕',
+      title: 'Countless Late Nights',
+      caption: 'Lamp on. Coffee cold. Books open. A quiet kind of alive.',
+      dateNote: 'Late night sessions',
+      rotation: 1.5,
+      bgColor: '#FAF7F1',
+      unlocked: memory.isLateNight || isLate || memory.coffeeMugs >= 1,
+    },
+    {
+      id: 'mem-print',
+      icon: '🖨️',
+      title: 'Printed & Sent',
+      caption: `${memory.orders > 0 ? `${memory.orders} order${memory.orders > 1 ? 's' : ''}` : 'Every page'} — each one a deadline met, a worry sent away.`,
+      dateNote: `${memory.totalPrintedPages} pages total`,
+      rotation: -1,
+      bgColor: '#E8E0D4',
+      unlocked: memory.orders >= 1,
+    },
+    {
+      id: 'mem-exam',
+      icon: '✨',
+      title: 'Placement Season',
+      caption: 'The desk gets messier. The focus gets sharper. Something is at stake.',
+      dateNote: 'Exam season',
+      rotation: 2.5,
+      bgColor: '#EAE4DD',
+      unlocked: memory.isExamSeason,
+    },
+    {
+      id: 'mem-festival',
+      icon: '🌧',
+      title: 'Monsoon Memories',
+      caption: 'The rain came and everything felt slower. In a good way. Like time agreed.',
+      dateNote: 'Festival season',
+      rotation: -1.5,
+      bgColor: '#FAF7F1',
+      unlocked: memory.isFestival,
+    },
+    {
+      id: 'mem-plant',
+      icon: '🌿',
+      title: 'The Plant Grew',
+      caption: 'It started small. Now it leans toward the window. It likes it here too.',
+      dateNote: `Stage ${memory.plantStage} of 3`,
+      rotation: 1,
+      bgColor: '#E8E0D4',
+      unlocked: memory.plantStage >= 2,
+    },
+    {
+      id: 'mem-graduation',
+      icon: '🎓',
+      title: 'Graduation Chapter',
+      caption: 'The last print order. The last late night. The beginning of a different kind of missing.',
+      dateNote: 'Someday',
+      rotation: -2.5,
+      bgColor: '#EAE4DD',
+      unlocked: memory.orders >= 10,
+    },
+  ];
+}
+
+export default function ProgressUI({ onClose }: ProgressUIProps) {
+  const { memory } = useMemorySystem();
+  const memories = useMemo(() => buildMemories(memory), [memory]);
+  const unlocked = memories.filter(m => m.unlocked);
+  const locked = memories.filter(m => !m.unlocked);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 20 }}
+      transition={{ type: 'spring', damping: 28, stiffness: 100 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        background: 'rgba(42, 41, 40, 0.25)',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        style={{
+          background: '#F5EFE7',
+          borderRadius: '8px',
+          width: '680px',
+          maxWidth: '95vw',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          position: 'relative',
+          boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {/* Scrapbook header — spiral binding */}
+        <div style={{
+          background: '#8B5A2B',
+          height: '22px',
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: '20px',
+          gap: '28px',
+          borderRadius: '8px 8px 0 0',
+        }}>
+          {Array.from({ length: 14 }).map((_, i) => (
+            <div key={i} style={{
+              width: '14px', height: '14px', borderRadius: '50%',
+              background: '#FAF7F1', border: '2px solid #5C3D1D',
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
+            }} />
+          ))}
+        </div>
+
+        <div style={{ padding: '2.5rem 3rem' }}>
+          {/* Close */}
+          <button
+            onClick={onClose}
+            style={{ position: 'absolute', top: '2rem', right: '2rem', background: 'none', border: 'none', fontSize: '1.5rem', color: 'rgba(42,41,40,0.3)', cursor: 'pointer', lineHeight: 1 }}
+            aria-label="Close scrapbook"
+          >×</button>
+
+          {/* Title */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.72rem', color: 'rgba(42,41,40,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>
+              A Quiet Scrapbook
+            </div>
+            <h2 style={{ fontFamily: 'Instrument Sans', fontSize: '2rem', color: '#2A2928', margin: 0, fontWeight: 400 }}>
+              Memories
+            </h2>
+            <p style={{ fontFamily: 'Instrument Sans', fontSize: '0.9rem', color: 'rgba(42,41,40,0.5)', margin: '0.4rem 0 0 0', fontStyle: 'italic' }}>
+              Not every moment is a milestone. But they add up.
+            </p>
+          </div>
+
+          {/* Unlocked memories */}
+          {unlocked.length > 0 && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: '1.5rem',
+              marginBottom: '2rem',
+            }}>
+              {unlocked.map((mem, idx) => (
+                <motion.div
+                  key={mem.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  style={{
+                    background: mem.bgColor,
+                    borderRadius: '3px',
+                    padding: '1.4rem 1.2rem',
+                    transform: `rotate(${mem.rotation}deg)`,
+                    boxShadow: '2px 5px 16px rgba(42,41,40,0.1)',
+                    position: 'relative',
+                    border: '1px solid rgba(42,41,40,0.06)',
+                  }}
+                >
+                  {/* Tape strip on top */}
+                  <div style={{
+                    position: 'absolute', top: '-8px', left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '50px', height: '16px',
+                    background: 'rgba(212,138,112,0.35)',
+                    borderRadius: '2px',
+                  }} />
+
+                  <div style={{ fontSize: '1.8rem', marginBottom: '0.8rem' }}>{mem.icon}</div>
+                  <div style={{ fontFamily: 'Instrument Sans', fontWeight: 'bold', fontSize: '1rem', color: '#2A2928', marginBottom: '0.5rem' }}>
+                    {mem.title}
+                  </div>
+                  <p style={{ fontFamily: 'Instrument Sans', fontSize: '0.85rem', color: 'rgba(42,41,40,0.65)', margin: '0 0 0.8rem 0', lineHeight: 1.5, fontStyle: 'italic' }}>
+                    {mem.caption}
+                  </p>
+                  <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.7rem', color: 'rgba(42,41,40,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {mem.dateNote}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty state — always alive */}
+          {unlocked.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem',
+              fontFamily: 'Instrument Sans',
+              color: 'rgba(42,41,40,0.4)',
+              fontStyle: 'italic',
+              fontSize: '1rem',
+              lineHeight: 1.8,
+            }}>
+              The scrapbook is empty for now.<br />
+              The memories will come.
+            </div>
+          )}
+
+          {/* Still ahead — locked memories, shown softly */}
+          {locked.length > 0 && (
+            <div style={{ borderTop: '1px dashed rgba(42,41,40,0.12)', paddingTop: '1.5rem' }}>
+              <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.7rem', color: 'rgba(42,41,40,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>
+                Still ahead
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+                {locked.map(mem => (
+                  <div key={mem.id} style={{
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(42,41,40,0.04)',
+                    border: '1px dashed rgba(42,41,40,0.1)',
+                    borderRadius: '20px',
+                    fontFamily: 'Space Grotesk',
+                    fontSize: '0.8rem',
+                    color: 'rgba(42,41,40,0.3)',
+                  }}>
+                    {mem.icon} {mem.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quiet link to The Last Night — always connected */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 1.5 }}
+            style={{
+              marginTop: '2rem',
+              paddingTop: '1.5rem',
+              borderTop: '1px dashed rgba(42,41,40,0.08)',
+              textAlign: 'center',
+            }}
+          >
+            <Link
+              href="/graduation"
+              style={{
+                fontFamily: 'Instrument Sans',
+                fontSize: '0.82rem',
+                color: 'rgba(42,41,40,0.3)',
+                fontStyle: 'italic',
+                textDecoration: 'none',
+                transition: 'color 0.3s',
+                display: 'inline-block',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(42,41,40,0.65)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(42,41,40,0.3)'; }}
+            >
+              Something quiet waits at the end. (Graduation Chapter)
+            </Link>
+          </motion.div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}

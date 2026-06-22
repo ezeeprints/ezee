@@ -1,130 +1,234 @@
 'use client';
 
-import React, { useState } from 'react';
-import styles from '../../student/student.module.css';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { useMemorySystem } from '../print/useMemorySystem';
 
 interface DeskUIProps {
   onClose: () => void;
 }
 
-interface Decoration {
-  id: string;
-  name: string;
-  emoji: string;
-  unlocked: boolean;
-  requirement: string;
+function getEziJournalEntry(memory: ReturnType<typeof useMemorySystem>['memory']): { leftPage: string; rightPage: string[] } {
+  const hour = new Date().getHours();
+  const isLate = hour >= 22 || hour <= 5;
+  const isMorning = hour >= 6 && hour <= 11;
+  const isAfternoon = hour >= 12 && hour <= 17;
+  const isGoldenHour = hour >= 17 && hour <= 20;
+
+  let leftPage = '';
+
+  if (memory.isLateNight || isLate) {
+    leftPage = 'It\'s late. The desk lamp is the warmest thing in the room right now. I meant to go to sleep earlier, but here we are. The rain started about an hour ago — soft, not dramatic. The kind that makes you feel less alone. I made some tea. It\'s getting cold. Still, I\'ll stay.';
+  } else if (isMorning) {
+    leftPage = 'The morning light comes in at a low angle and catches the dust on the bookshelf. I like mornings before anything has happened. The coffee is still hot. The books are where I left them. A good start.';
+  } else if (isAfternoon) {
+    leftPage = 'Afternoon. Spent the last hour sorting papers. Some of them I don\'t remember printing — they must be from a different season. I left the window open a little. The plant seems to prefer it that way.';
+  } else if (isGoldenHour) {
+    leftPage = 'The golden hour makes everything look like a memory from years ago. The light turned the bookshelf amber. I watered the plant. A quiet, full afternoon.';
+  } else {
+    leftPage = 'Quiet evening. The lamp is on. The room feels smaller in a good way. Like all the things that matter are very close.';
+  }
+
+  if (memory.isExamSeason) {
+    leftPage = 'Exam season. The books are everywhere. I\'ve been trying to keep the desk clear, but new ones keep appearing. The coffee mugs are multiplying. I don\'t mind. This energy feels familiar.';
+  }
+
+  const rightNotes: string[] = [];
+
+  if (memory.visits > 5) {
+    rightNotes.push('You\'ve been here a few times now. I noticed.');
+  }
+  if (memory.isLateNight || isLate) {
+    rightNotes.push('Get some rest soon. The notes will still be here.');
+  }
+  if (memory.orders > 0) {
+    rightNotes.push(`You\'ve printed ${memory.orders} thing${memory.orders > 1 ? 's' : ''} now. The bookshelf is filling.`);
+  }
+  if (memory.plantStage >= 2) {
+    rightNotes.push('The plant has grown. It must like it here.');
+  }
+  if (memory.coffeeMugs >= 2) {
+    rightNotes.push('I counted the mugs. Please drink more water.');
+  }
+  if (rightNotes.length === 0) {
+    rightNotes.push('Take your time.');
+    rightNotes.push('I\'ll stay here.');
+  }
+
+  return { leftPage, rightPage: rightNotes };
 }
 
 export default function DeskUI({ onClose }: DeskUIProps) {
-  const [decorations, setDecorations] = useState<Decoration[]>([
-    { id: 'dec-1', name: 'Mini Cactus Plant', emoji: '🌵', unlocked: true, requirement: '1 Completed Order' },
-    { id: 'dec-2', name: 'Cozy Pajamas for Ezi', emoji: '🛌', unlocked: true, requirement: 'Night Study Session' },
-    { id: 'dec-3', name: 'Vintage Brass Lamp', emoji: '💡', unlocked: false, requirement: '5 Completed Orders' },
-    { id: 'dec-4', name: 'Study Buddy Cat', emoji: '🐱', unlocked: true, requirement: 'Loyal User Badge' },
-    { id: 'dec-5', name: 'Thermal Coffee Mug', emoji: '☕', unlocked: false, requirement: 'Weekend Print Order' }
-  ]);
+  const { memory } = useMemorySystem();
+  const { leftPage, rightPage } = useMemo(() => getEziJournalEntry(memory), [memory]);
 
-  const [quote, setQuote] = useState({
-    text: 'Take a deep breath. You are doing great. One page at a time.',
-    author: 'Ezi'
-  });
-
-  const unlockedCount = decorations.filter(d => d.unlocked).length;
+  // Sticky note colors – muted and handcrafted
+  const stickyColors = ['#F4D03F', '#D48A70', '#A9B59D', '#EAE4DD'];
 
   return (
-    <div className={styles.paperModal} style={{ width: '700px', maxWidth: '95vw', padding: '3.5rem 3rem' }}>
-      <button className={styles.closeBtn} onClick={onClose} aria-label="Close Desk Companion">×</button>
-      
-      {/* Decorative Washi Tape on top left and top right */}
-      <div style={{ position: 'absolute', top: '-12px', left: '10%', transform: 'rotate(-4deg)', width: '70px', height: '24px', background: 'rgba(212, 138, 112, 0.3)', border: '1px solid rgba(0,0,0,0.03)' }} />
-      <div style={{ position: 'absolute', top: '-12px', right: '10%', transform: 'rotate(3deg)', width: '70px', height: '24px', background: 'rgba(169, 181, 157, 0.3)', border: '1px solid rgba(0,0,0,0.03)' }} />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 20 }}
+      transition={{ type: 'spring', damping: 28, stiffness: 100 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        background: 'rgba(42, 41, 40, 0.25)',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        style={{
+          background: '#F5EFE7',
+          borderRadius: '8px',
+          width: '780px',
+          maxWidth: '95vw',
+          position: 'relative',
+          boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
+          overflow: 'hidden',
+          display: 'flex',
+        }}
+      >
+        {/* Journal spine */}
+        <div style={{
+          width: '18px', flexShrink: 0,
+          background: 'linear-gradient(to right, #C4956A, #8B5A2B)',
+          boxShadow: 'inset -4px 0 8px rgba(0,0,0,0.2)',
+        }} />
 
-      <div style={{ display: 'flex', gap: '3rem' }}>
-        
-        {/* Left column: Ezi's Journal / Status */}
-        <div style={{ flex: 1.2 }}>
-          <h2 style={{ fontFamily: 'Instrument Sans', fontSize: '2.2rem', color: '#2A2928', margin: '0 0 1rem 0', borderBottom: '2px dashed rgba(42, 41, 40, 0.2)', paddingBottom: '0.5rem' }}>
-            Ezi's Study Log
-          </h2>
+        {/* Left journal page */}
+        <div style={{
+          flex: 1.1,
+          padding: '3rem 2rem 3rem 2.5rem',
+          background: '#FAF7F1',
+          backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, rgba(42,41,40,0.07) 32px)',
+          backgroundSize: '100% 32px',
+          position: 'relative',
+          borderRight: '1px solid rgba(42,41,40,0.08)',
+        }}>
+          {/* Red margin line */}
+          <div style={{
+            position: 'absolute', left: '2rem', top: 0, bottom: 0,
+            width: '1.5px', background: 'rgba(212,138,112,0.35)',
+            pointerEvents: 'none',
+          }} />
 
-          {/* Character Mood Status */}
-          <div style={{ background: '#EAE4DD', borderRadius: '8px', padding: '1.2rem', marginBottom: '1.5rem', border: '1px solid rgba(42,41,40,0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ fontSize: '2.5rem', animation: 'float 4s ease-in-out infinite' }}>☕</span>
-              <div>
-                <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.8rem', color: '#7A6D8C', textTransform: 'uppercase' }}>Current Mood</div>
-                <div style={{ fontFamily: 'Instrument Sans', fontSize: '1.2rem', fontWeight: 'bold', color: '#2A2928' }}>Sorting books & Sketching</div>
-              </div>
-            </div>
+          {/* Washi tape on top corner */}
+          <div style={{ position: 'absolute', top: '-8px', left: '25%', transform: 'rotate(-3deg)', width: '75px', height: '22px', background: 'rgba(212, 138, 112, 0.3)', borderRadius: '2px' }} />
+
+          <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.72rem', color: 'rgba(42,41,40,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5rem', paddingLeft: '0.5rem' }}>
+            Ezi's Journal
           </div>
 
-          {/* Motivation Quote Card */}
-          <div style={{ 
-            background: '#fff', 
-            borderLeft: '4px solid #D48A70', 
-            padding: '1rem 1.2rem', 
-            boxShadow: '1px 3px 8px rgba(0,0,0,0.03)',
-            marginBottom: '1.5rem'
+          <p style={{
+            fontFamily: 'Instrument Sans',
+            fontSize: '1.05rem',
+            lineHeight: 1.9,
+            color: '#2A2928',
+            margin: 0,
+            fontStyle: 'italic',
+            paddingLeft: '0.5rem',
           }}>
-            <p style={{ fontFamily: 'Instrument Sans', fontSize: '1.1rem', fontStyle: 'italic', margin: '0 0 0.5rem 0', color: '#2A2928', lineHeight: '1.5' }}>
-              "{quote.text}"
-            </p>
-            <span style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#7A6D8C', fontWeight: 'bold' }}>
-              — {quote.author} the Study Companion
-            </span>
-          </div>
+            {leftPage}
+          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#7A6D8C' }}>
-            <div style={{ background: 'rgba(169, 181, 157, 0.1)', padding: '0.6rem', borderRadius: '4px', textAlign: 'center' }}>
-              🍀 Season: <span style={{ color: '#2A2928', fontWeight: 'bold' }}>Exam Season</span>
-            </div>
-            <div style={{ background: 'rgba(212, 138, 112, 0.1)', padding: '0.6rem', borderRadius: '4px', textAlign: 'center' }}>
-              🌈 Weather: <span style={{ color: '#2A2928', fontWeight: 'bold' }}>Cozy Rain</span>
-            </div>
-          </div>
+          {/* Coffee ring stain */}
+          <div style={{
+            position: 'absolute', bottom: '3rem', right: '3rem',
+            width: '55px', height: '55px', borderRadius: '50%',
+            border: '2.5px solid rgba(139,90,43,0.09)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: '2.8rem', right: '2.8rem',
+            width: '40px', height: '40px', borderRadius: '50%',
+            border: '1.5px solid rgba(139,90,43,0.06)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Folded bookmark corner */}
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 0, height: 0,
+            borderBottom: '40px solid #D48A70',
+            borderLeft: '40px solid transparent',
+            opacity: 0.4,
+          }} />
         </div>
 
-        {/* Right column: Rewards / Decorations */}
-        <div style={{ flex: 1, borderLeft: '1px solid rgba(42, 41, 40, 0.1)', paddingLeft: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.2rem' }}>
-            <h3 style={{ fontFamily: 'Space Grotesk', fontSize: '1.1rem', margin: 0, textTransform: 'uppercase', color: '#7A6D8C' }}>
-              Room Treasures
-            </h3>
-            <span style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#A9B59D', fontWeight: 'bold' }}>
-              {unlockedCount}/{decorations.length} Unlocked
-            </span>
+        {/* Right journal page — sticky notes from Ezi */}
+        <div style={{
+          flex: 0.9,
+          padding: '3rem 2.5rem 3rem 2rem',
+          background: '#FAF7F1',
+          backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, rgba(42,41,40,0.07) 32px)',
+          backgroundSize: '100% 32px',
+          position: 'relative',
+        }}>
+          <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.72rem', color: 'rgba(42,41,40,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5rem' }}>
+            Notes for you
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {decorations.map((dec) => (
-              <div 
-                key={dec.id}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {rightPage.map((note, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.15, duration: 0.5 }}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '0.8rem',
-                  borderRadius: '6px',
-                  backgroundColor: dec.unlocked ? '#FAF7F1' : 'rgba(42, 41, 40, 0.03)',
-                  border: dec.unlocked ? '1px solid rgba(42, 41, 40, 0.15)' : '1px dashed rgba(42, 41, 40, 0.1)',
-                  opacity: dec.unlocked ? 1 : 0.65,
-                  transition: 'all 0.2s ease'
+                  background: stickyColors[idx % stickyColors.length],
+                  padding: '1rem 1.2rem',
+                  transform: `rotate(${idx % 2 === 0 ? -1.5 : 2}deg)`,
+                  boxShadow: '2px 4px 12px rgba(42,41,40,0.1)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'Instrument Sans',
+                  color: '#2A2928',
+                  lineHeight: 1.5,
+                  position: 'relative',
                 }}
-                className={dec.unlocked ? styles.wiggle : ''}
               >
-                <span style={{ fontSize: '1.8rem' }}>{dec.emoji}</span>
-                <div style={{ fontFamily: 'Instrument Sans' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#2A2928' }}>{dec.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#7A6D8C', fontFamily: 'Space Grotesk' }}>
-                    {dec.unlocked ? 'Placed in room' : `Locked: ${dec.requirement}`}
-                  </div>
-                </div>
-              </div>
+                {/* Pin */}
+                <div style={{
+                  position: 'absolute', top: '-7px', left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '10px', height: '10px', borderRadius: '50%',
+                  background: '#C4956A', border: '1px solid rgba(42,41,40,0.3)',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+                }} />
+                {note}
+              </motion.div>
             ))}
           </div>
-        </div>
 
-      </div>
-    </div>
+          {/* Pencil illustration */}
+          <div style={{ position: 'absolute', bottom: '2.5rem', right: '1.5rem', opacity: 0.25, transform: 'rotate(-25deg)' }}>
+            <svg width="14" height="80" viewBox="0 0 14 80">
+              <rect x="2" y="10" width="10" height="55" fill="#C4956A" rx="1" />
+              <polygon points="2,65 12,65 7,80" fill="#FAF7F1" />
+              <rect x="2" y="5" width="10" height="10" fill="#A9B59D" rx="1" />
+              <rect x="2" y="0" width="10" height="7" fill="#D48A70" rx="1" />
+            </svg>
+          </div>
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute', top: '1.5rem', right: '1.5rem',
+              background: 'none', border: 'none', fontSize: '1.5rem',
+              color: 'rgba(42,41,40,0.3)', cursor: 'pointer', lineHeight: 1,
+            }}
+            aria-label="Close journal"
+          >×</button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -140,7 +140,7 @@ export default function Navbar() {
         ))}
       </div>
 
-      <a
+      <Link
         href="/auth"
         style={{
           textDecoration: "none",
@@ -166,7 +166,7 @@ export default function Navbar() {
         }}
       >
         Start Printing
-      </a>
+      </Link>
     </nav>
   );
 }

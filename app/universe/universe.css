@@ -1,0 +1,66 @@
+/* THE EZEE UNIVERSE BIBLE - FIRST LAW: Quiet. */
+/* THE EZEE UNIVERSE BIBLE - SECOND LAW: Nothing performs. Nothing seeks attention. */
+
+:root {
+  /* FOURTH LAW: Lighting creates emotion. */
+  --light-morning: #FDF9F1;
+  --light-golden: #FDE8D0;
+  --light-rain: #E8ECEF;
+  --light-moon: #E5E9F0;
+  --light-lamp: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+
+  /* FIFTH LAW: Motion breathes. 400-700ms. Spring animations. */
+  /* We use cubic-bezier to simulate a gentle spring (overshoot/settle) */
+  --spring-fast: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-breathe: 700ms cubic-bezier(0.25, 1, 0.5, 1);
+  --motion-drift: 20s linear infinite;
+  
+  /* SIXTH LAW: Textures matter. */
+  --texture-paper: #FAF7F1;
+  --texture-wood: #4A3219;
+  --texture-dark-wood: #36220E;
+  --texture-fabric: #D1C7B7;
+  --texture-ink: #2A2928;
+  --texture-dust: rgba(255, 255, 255, 0.4);
+
+  /* THIRD LAW: Everything has weight. (Shadows) */
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 10px rgba(0, 0, 0, 0.03);
+  --shadow-rest: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-ink: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Global Application of Laws */
+body {
+  background-color: var(--texture-paper);
+  color: var(--texture-ink);
+  transition: background-color var(--spring-breathe), color var(--spring-breathe);
+}
+
+/* Textures Overlay (for subtle noise, applied via pseudo-elements where needed) */
+.universe-texture-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Breathe Animations */
+@keyframes universe-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.005); }
+}
+
+@keyframes universe-dust-drift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { transform: translate(20px, -40px) scale(1.2); opacity: 0; }
+}
+
+/* Overriding default transitions to adhere to the 400-700ms rule */
+* {
+  transition-duration: var(--spring-fast);
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+}

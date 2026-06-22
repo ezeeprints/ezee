@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import styles from '../../student/student.module.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RemindersProps {
   onClose: () => void;
@@ -52,81 +52,85 @@ export default function Reminders({ onClose }: RemindersProps) {
   };
 
   return (
-    <div className={styles.paperModal} style={{ width: '750px', maxWidth: '95vw', padding: '3.5rem 3rem' }}>
-      <button className={styles.closeBtn} onClick={onClose} aria-label="Close Reminders">×</button>
-      
-      {/* Wooden corkboard background decoration behind the sticky notes */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 20 }}
+      transition={{ type: 'spring', damping: 28, stiffness: 100 }}
+      style={{
+        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center',
+        justifyContent: 'center', zIndex: 1000,
+        background: 'rgba(42, 41, 40, 0.25)', backdropFilter: 'blur(4px)',
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+    <motion.div style={{
+      width: '720px', maxWidth: '95vw',
+      borderRadius: '8px', overflow: 'hidden',
+      boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
+      position: 'relative',
+    }}>
+      {/* Cork board surface */}
       <div style={{
-        position: 'absolute',
-        inset: '1.5rem',
-        border: '3px solid #FAF7F1',
-        borderRadius: '6px',
-        backgroundColor: '#f5eede',
-        backgroundImage: 'radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0)',
-        backgroundSize: '16px 16px',
-        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.08)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
-
-      {/* Main Content container layered above corkboard */}
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '2px solid rgba(42, 41, 40, 0.15)', paddingBottom: '0.5rem' }}>
-          <h2 style={{ fontFamily: 'Instrument Sans', fontSize: '2.2rem', color: '#2A2928', margin: 0, fontWeight: 'bold' }}>
-            Board Reminders
-          </h2>
-          <span style={{ fontSize: '2rem' }}>📌</span>
+        backgroundColor: '#C4956A',
+        backgroundImage: 'radial-gradient(rgba(0,0,0,0.06) 1px, transparent 0)',
+        backgroundSize: '14px 14px',
+        boxShadow: 'inset 0 0 30px rgba(92,61,29,0.3)',
+        padding: '2.5rem 2.5rem 1rem 2.5rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div>
+            <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.72rem', color: 'rgba(250,247,241,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>
+              The board
+            </div>
+            <h2 style={{ fontFamily: 'Instrument Sans', fontSize: '1.8rem', color: '#FAF7F1', margin: 0, fontWeight: 400 }}>
+              Pinned Notes
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'rgba(250,247,241,0.15)', border: '1px solid rgba(250,247,241,0.2)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(250,247,241,0.7)', fontSize: '1.4rem', lineHeight: 1 }}
+            aria-label="Close board"
+          >×</button>
         </div>
 
         {/* Sticky Notes Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem', minHeight: '220px', marginBottom: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '1.5rem', minHeight: '200px', marginBottom: '1.5rem' }}>
+          <AnimatePresence>
           {reminders.map((reminder) => (
-            <div 
+            <motion.div
               key={reminder.id}
+              initial={{ opacity: 0, scale: 0.9, rotate: 0 }}
+              animate={{ opacity: 1, scale: 1, rotate: parseFloat(reminder.rotation) }}
+              exit={{ opacity: 0, scale: 0.8, y: -20 }}
+              transition={{ type: 'spring', damping: 22 }}
               style={{
                 backgroundColor: reminder.color,
-                transform: `rotate(${reminder.rotation})`,
                 color: reminder.color === '#7A6D8C' ? '#FAF7F1' : '#2A2928',
                 padding: '1.25rem',
                 borderRadius: '2px',
-                boxShadow: '2px 8px 15px rgba(42, 41, 40, 0.12), inset 0 0 0 1px rgba(0,0,0,0.05)',
+                boxShadow: '3px 10px 20px rgba(42,41,40,0.25)',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                transition: 'all 0.3s ease',
-                cursor: 'default'
               }}
-              className={styles.wiggle}
             >
-              {/* Pushpin pin circle at the top */}
+              {/* Washi tape strip on top */}
               <div style={{
                 position: 'absolute',
-                top: '-8px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                background: '#D48A70',
-                border: '1px solid #FAF7F1',
-                boxShadow: '0 2px 3px rgba(0,0,0,0.3)'
+                top: '-8px', left: '30%',
+                width: '40%', height: '16px',
+                background: 'rgba(250,247,241,0.45)',
+                borderRadius: '2px',
               }} />
 
-              {/* Delete button (only show on hover via absolute position) */}
-              <button 
+              <button
                 onClick={() => handleRemove(reminder.id)}
                 style={{
-                  position: 'absolute',
-                  top: '0.4rem',
-                  right: '0.4rem',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  color: 'inherit',
-                  opacity: 0.6,
-                  fontWeight: 'bold'
+                  position: 'absolute', top: '0.4rem', right: '0.4rem',
+                  background: 'none', border: 'none', fontSize: '0.85rem',
+                  cursor: 'pointer', color: 'inherit', opacity: 0.4, fontWeight: 'bold',
                 }}
                 title="Tear off"
               >
@@ -134,76 +138,101 @@ export default function Reminders({ onClose }: RemindersProps) {
               </button>
 
               <div style={{ marginTop: '0.5rem' }}>
-                <p style={{
-                  fontFamily: 'Instrument Sans',
-                  fontSize: '1rem',
-                  lineHeight: '1.4',
-                  margin: 0
-                }}>
+                <p style={{ fontFamily: 'Instrument Sans', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
                   {reminder.text}
                 </p>
               </div>
 
               <div style={{
-                marginTop: '1.5rem',
-                borderTop: `1px dashed ${reminder.color === '#7A6D8C' ? 'rgba(250, 247, 241, 0.3)' : 'rgba(42, 41, 40, 0.15)'}`,
+                marginTop: '1.2rem',
+                borderTop: `1px dashed ${reminder.color === '#7A6D8C' ? 'rgba(250,247,241,0.3)' : 'rgba(42,41,40,0.15)'}`,
                 paddingTop: '0.5rem',
                 fontFamily: 'Space Grotesk',
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                textTransform: 'uppercase'
+                fontSize: '0.7rem',
+                textTransform: 'uppercase',
+                opacity: 0.6,
               }}>
                 {reminder.due}
               </div>
-            </div>
+            </motion.div>
+          ))}
+          </AnimatePresence>
+        </div>
+      </div> {/* End cork board */}
+
+      {/* Write-a-note scratchpad area */}
+      <div style={{
+        background: '#FAF7F1',
+        padding: '1.5rem 2.5rem 2rem 2.5rem',
+        borderTop: '3px solid rgba(92,61,29,0.2)',
+      }}>
+        {/* Type tabs — torn paper style */}
+        <div style={{ display: 'flex', gap: '0', marginBottom: '1rem' }}>
+          {(['academic', 'pickup'] as const).map(type => (
+            <button
+              key={type}
+              onClick={() => setNewType(type)}
+              style={{
+                background: newType === type ? '#FAF7F1' : 'transparent',
+                border: 'none',
+                borderBottom: newType === type ? '2px solid #D48A70' : '2px solid transparent',
+                padding: '0.4rem 1rem',
+                fontFamily: 'Space Grotesk',
+                fontSize: '0.8rem',
+                color: newType === type ? '#2A2928' : 'rgba(42,41,40,0.4)',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                transition: 'all 0.2s',
+              }}
+            >
+              {type === 'academic' ? 'Study Task' : 'Print Pick-up'}
+            </button>
           ))}
         </div>
 
-        {/* Add new sticky note form */}
-        <form onSubmit={handleAdd} style={{
-          background: '#FAF7F1',
-          border: '1px solid rgba(42, 41, 40, 0.15)',
-          padding: '1.2rem',
-          borderRadius: '6px',
-          display: 'flex',
-          gap: '1rem',
-          alignItems: 'center'
-        }}>
-          <input 
-            type="text" 
-            placeholder="Jot down a quick task..." 
+        <form onSubmit={handleAdd} style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder={newType === 'pickup' ? 'Pick up from printer...' : 'Write a note...'}
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
             style={{
-              flex: 1,
-              padding: '0.6rem 1rem',
-              border: '1px solid rgba(42, 41, 40, 0.2)',
-              outline: 'none',
-              background: '#fff',
-              fontFamily: 'Instrument Sans',
-              borderRadius: '4px'
+              flex: 1, padding: '0.7rem 1rem',
+              border: '1px solid rgba(42,41,40,0.15)',
+              outline: 'none', background: '#fff',
+              fontFamily: 'Instrument Sans', fontSize: '0.95rem',
+              borderRadius: '3px', color: '#2A2928',
+              backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(42,41,40,0.06) 24px)',
+              backgroundSize: '100% 24px',
             }}
           />
-          <select 
-            value={newType}
-            onChange={(e) => setNewType(e.target.value as 'pickup' | 'academic')}
+          <button
+            type="submit"
             style={{
-              padding: '0.6rem',
-              border: '1px solid rgba(42, 41, 40, 0.2)',
-              background: '#fff',
-              fontFamily: 'Space Grotesk',
-              borderRadius: '4px'
+              background: '#2A2928', color: '#FAF7F1',
+              border: 'none', padding: '0.7rem 1.5rem',
+              borderRadius: '3px', fontFamily: 'Space Grotesk',
+              fontSize: '0.85rem', cursor: 'pointer',
+              transition: 'all 0.2s',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#C4956A'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#2A2928'; }}
           >
-            <option value="academic">Academic Task</option>
-            <option value="pickup">Print Pick-up</option>
-          </select>
-          <button type="submit" className={styles.tactileBtn} style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem' }}>
-            Pin Note
+            Pin
           </button>
         </form>
-      </div>
 
-    </div>
+        {/* Ezi's quiet note */}
+        <p style={{
+          fontFamily: 'Instrument Sans', fontSize: '0.82rem',
+          color: 'rgba(42,41,40,0.3)', fontStyle: 'italic',
+          margin: '1rem 0 0 0',
+        }}>
+          I pinned the important ones at the top.
+        </p>
+      </div>
+    </motion.div>
+    </motion.div>
   );
 }

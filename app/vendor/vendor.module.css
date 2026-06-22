@@ -1,0 +1,170 @@
+.workshopContainer {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: #F5EFE7;
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+/* Nav UI */
+.roomNav {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2rem;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 239, 231, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.navButton {
+  background: transparent;
+  border: none;
+  color: rgba(245, 239, 231, 0.5);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navButton:hover {
+  color: rgba(245, 239, 231, 0.8);
+}
+
+.navButton.active {
+  color: #D4AF37;
+}
+
+.navButton.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: #D4AF37;
+  border-radius: 2px;
+}
+
+/* Zone Panning */
+.zoneContainer {
+  display: flex;
+  width: 300vw;
+  height: 100vh;
+  transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zone {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Ambient Effects */
+.dustParticle {
+  position: absolute;
+  background: #FFF;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.rainDrop {
+  position: absolute;
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3));
+  pointer-events: none;
+  z-index: 5;
+}
+
+.musicNote {
+  position: absolute;
+  font-size: 1rem;
+  color: rgba(212, 175, 55, 0.6);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Wall Clock */
+.wallClock {
+  position: absolute;
+  top: 5vh;
+  left: 5vw;
+  width: 80px;
+  height: 80px;
+  background: #36220E;
+  border-radius: 50%;
+  border: 4px solid #5C3D1D;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clockFace {
+  width: 60px;
+  height: 60px;
+  background: #F5EFE7;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+
+.clockHand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom;
+  background: #2A2928;
+  border-radius: 2px;
+}
+
+.hourHand { width: 4px; height: 15px; margin-left: -2px; }
+.minuteHand { width: 2px; height: 25px; margin-left: -1px; }
+.secondHand { width: 1px; height: 28px; background: #9B2C2C; margin-left: -0.5px; }
+
+/* Windows */
+.window {
+  position: absolute;
+  top: 10vh;
+  right: 10vw;
+  width: 200px;
+  height: 300px;
+  background: #1A1918;
+  border: 10px solid #36220E;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.windowPane {
+  flex: 1;
+  border-bottom: 5px solid #36220E;
+  position: relative;
+}
+
+.window::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 5px;
+  background: #36220E;
+  transform: translateX(-50%);
+}

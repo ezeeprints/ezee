@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 
 export default function CtaSection() {
@@ -147,7 +148,7 @@ export default function CtaSection() {
           handle the rest.
         </p>
 
-        <a
+        <Link
           href="/auth"
           style={{
             textDecoration: "none",
@@ -187,7 +188,7 @@ export default function CtaSection() {
           >
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
-        </a>
+        </Link>
 
         <div
           style={{

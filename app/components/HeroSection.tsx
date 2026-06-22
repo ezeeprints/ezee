@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Reveal } from "./Reveal";
 
 export default function HeroSection() {
@@ -147,7 +148,7 @@ export default function HeroSection() {
               alignItems: "center",
             }}
           >
-            <a
+            <Link
               href="/auth"
               style={{
                 textDecoration: "none",
@@ -187,7 +188,7 @@ export default function HeroSection() {
               >
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-            </a>
+            </Link>
 
             <a
               href="#how"

@@ -2,228 +2,251 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from '../../student/student.module.css';
 
 interface NotificationsProps {
   onClose: () => void;
 }
 
-interface Letter {
+interface EziLetter {
   id: string;
-  sender: string;
-  date: string;
-  subject: string;
-  body: string;
   isRead: boolean;
-  type: 'postcard' | 'letter';
   stampEmoji: string;
+  message: string;
+  from: string;
 }
 
-export default function Notifications({ onClose }: NotificationsProps) {
-  const [activeLetterId, setActiveLetterId] = useState<string>('mail-1');
+const getContextualLetters = (): EziLetter[] => {
+  const hour = new Date().getHours();
+  const isLate = hour >= 22 || hour <= 5;
+  const isMorning = hour >= 6 && hour <= 10;
 
-  const letters: Letter[] = [
+  return [
     {
-      id: 'mail-1',
-      sender: 'Ezi Study Companion',
-      date: '21 Jun 2026',
-      subject: 'Welcome to your digital study room! ☕',
-      body: 'Hello study companion! I am Ezi, your little ink spirit. I live here in this desk nook, and I will be helping you manage all your notes and prints. Try printing a PDF using the printer to see me work!',
+      id: 'letter-1',
       isRead: false,
-      type: 'postcard',
-      stampEmoji: '☕'
+      stampEmoji: '☕',
+      from: 'Ezi',
+      message: isLate
+        ? 'Still here? I made some tea. The lamp is warm. Take your time.'
+        : isMorning
+          ? 'Good morning. The window light is soft today. A quiet one.'
+          : 'Looks peaceful in here. I\'ll stay nearby.',
     },
     {
-      id: 'mail-2',
-      sender: 'Ezee Prints Office',
-      date: '20 Jun 2026',
-      subject: 'Your notes are ready for pickup! 📚',
-      body: 'Chemistry Lab Report 4 is ready. Ezi carefully prepared it, and it is resting at the counter, waiting for you. Head over when you have a moment.',
-      isRead: true,
-      type: 'letter',
-      stampEmoji: '📮'
+      id: 'letter-2',
+      isRead: false,
+      stampEmoji: '📮',
+      from: 'Ezee Prints',
+      message: 'Your notes are resting at the counter. Ezi wrapped them carefully. Whenever you\'re ready.',
     },
     {
-      id: 'mail-3',
-      sender: 'Study Club Rewards',
-      date: '18 Jun 2026',
-      subject: 'Special offer: 15% off exam notes 🎟️',
-      body: 'Get ready for finals! Use code STUDYROOM15 to get 15% off your next printing job. Ezi has also hidden a sticker reward somewhere in the room—can you find it?',
+      id: 'letter-3',
       isRead: true,
-      type: 'postcard',
-      stampEmoji: '⭐'
-    }
+      stampEmoji: '🌧️',
+      from: 'Ezi',
+      message: 'Rain sounds nice today. I left the window open a little. The plant seems to like it.',
+    },
   ];
+};
 
-  const activeLetter = letters.find(l => l.id === activeLetterId) || letters[0];
+export default function Notifications({ onClose }: NotificationsProps) {
+  const [letters] = useState<EziLetter[]>(getContextualLetters);
+  const [openLetterId, setOpenLetterId] = useState<string | null>(null);
+  const [readSet, setReadSet] = useState<Set<string>>(
+    new Set(letters.filter(l => l.isRead).map(l => l.id))
+  );
 
-  const variants = {
-    initial: { opacity: 0, y: 30, rotateX: 10, scale: 0.95 },
-    animate: { opacity: 1, y: 0, rotateX: 0, scale: 1, transition: { duration: 0.6, type: 'spring' as const, bounce: 0.3 } },
-    exit: { opacity: 0, y: 30, rotateX: -10, scale: 0.95, transition: { duration: 0.4 } }
+  const handleOpenLetter = (id: string) => {
+    setOpenLetterId(id);
+    setReadSet(prev => new Set([...prev, id]));
   };
 
-  const letterVariants = {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0, transition: { duration: 0.5 } }
-  };
+  const openLetter = letters.find(l => l.id === openLetterId) ?? null;
+
+  // Colors for envelope backgrounds
+  const envelopeColors = ['#EAE4DD', '#FAF7F1', '#E8E0D4'];
 
   return (
-    <motion.div 
-      variants={variants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className={styles.paperModal} 
-      style={{ 
-        width: '850px', 
-        maxWidth: '95vw', 
-        padding: '3rem',
-        background: '#EAE4DD', // Mailbox color
-        boxShadow: '0 25px 50px rgba(42, 41, 40, 0.15), inset 0 0 0 1px rgba(255,255,255,0.3)',
-        borderRadius: '12px'
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 20 }}
+      transition={{ type: 'spring', damping: 28, stiffness: 100 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        background: 'rgba(42, 41, 40, 0.25)',
+        backdropFilter: 'blur(4px)',
       }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <button className={styles.closeBtn} onClick={onClose} aria-label="Close Mailbox" style={{ background: 'transparent', border: 'none', fontSize: '2rem', color: '#7A6D8C', cursor: 'pointer' }}>×</button>
-      
-      {/* Tape on top */}
-      <div style={{ position: 'absolute', top: '-15px', left: '15%', transform: 'rotate(-3deg)', width: '90px', height: '28px', background: 'rgba(212, 138, 112, 0.25)', border: '1px solid rgba(0,0,0,0.03)' }} />
+      <motion.div
+        style={{
+          background: '#F5EFE7',
+          borderRadius: '8px',
+          padding: '3rem 2.5rem',
+          width: '680px',
+          maxWidth: '95vw',
+          position: 'relative',
+          boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
+          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.025) 1px, transparent 1.5px)',
+          backgroundSize: '22px 22px',
+        }}
+      >
+        {/* Washi tape corner */}
+        <div style={{ position: 'absolute', top: '-12px', left: '18%', transform: 'rotate(-4deg)', width: '80px', height: '26px', background: 'rgba(212, 138, 112, 0.35)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: '2px' }} />
 
-      <h2 className={styles.modalHeader} style={{ marginBottom: '1.5rem', fontFamily: 'Instrument Sans', fontSize: '2rem', color: '#2A2928' }}>Mailbox</h2>
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', fontSize: '1.6rem', color: 'rgba(42,41,40,0.4)', cursor: 'pointer', lineHeight: 1 }}
+          aria-label="Close mailbox"
+        >×</button>
 
-      <div style={{ display: 'flex', gap: '2rem', height: '400px' }}>
-        
-        {/* Left column: Envelope pile list */}
-        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', paddingRight: '0.5rem' }}>
-          <p style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#7A6D8C', textTransform: 'uppercase', margin: '0 0 0.5rem 0' }}>
-            Incoming ({letters.filter(l => !l.isRead).length} new)
+        {/* Header */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <h2 style={{ fontFamily: 'Instrument Sans', fontSize: '2rem', color: '#2A2928', margin: '0 0 0.3rem 0', fontWeight: 400 }}>
+            Letters
+          </h2>
+          <p style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: 'rgba(42,41,40,0.45)', margin: 0, fontStyle: 'italic' }}>
+            Ezi left a few things on the desk.
           </p>
+        </div>
+
+        {/* Letter Stack */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {letters.map((letter, idx) => {
-            const isActive = letter.id === activeLetterId;
+            const isOpen = readSet.has(letter.id);
             return (
-              <motion.div 
-                key={letter.id} 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => setActiveLetterId(letter.id)}
-                whileHover={{ scale: 1.02 }}
+              <motion.div
+                key={letter.id}
+                whileHover={{ y: -2, rotate: 0.5 }}
+                transition={{ type: 'spring', damping: 20 }}
+                onClick={() => handleOpenLetter(letter.id)}
                 style={{
-                  background: isActive ? '#fff' : '#FAF7F1',
-                  border: isActive ? '2px solid #2A2928' : '1px solid rgba(42, 41, 40, 0.15)',
-                  borderRadius: '6px',
-                  padding: '1rem',
+                  background: envelopeColors[idx % envelopeColors.length],
+                  border: openLetterId === letter.id ? '1.5px solid rgba(42,41,40,0.4)' : '1px solid rgba(42,41,40,0.1)',
+                  borderRadius: '4px',
+                  padding: '1.2rem 1.5rem',
                   cursor: 'pointer',
                   position: 'relative',
-                  transform: isActive ? 'scale(1.02) rotate(-1deg)' : 'rotate(0deg)',
-                  boxShadow: isActive ? '4px 6px 12px rgba(42,41,40,0.08)' : 'none',
-                  zIndex: isActive ? 10 : 1
+                  transform: `rotate(${idx % 2 === 0 ? -0.5 : 0.8}deg)`,
+                  boxShadow: '1px 3px 12px rgba(42,41,40,0.07)',
                 }}
               >
-                {!letter.isRead && (
-                  <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#D48A70' }} />
-                )}
-                <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.8rem', color: '#7A6D8C', marginBottom: '0.3rem' }}>{letter.date}</div>
-                <h4 style={{ fontFamily: 'Instrument Sans', fontSize: '1rem', color: '#2A2928', margin: '0 0 0.2rem 0', fontWeight: 'bold' }}>{letter.sender}</h4>
-                <p style={{ fontFamily: 'Instrument Sans', fontSize: '0.9rem', color: '#7A6D8C', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {letter.subject}
-                </p>
+                {/* Envelope V-fold top */}
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, height: '12px',
+                  background: 'rgba(0,0,0,0.03)',
+                  borderBottom: '1px solid rgba(0,0,0,0.05)',
+                  clipPath: 'polygon(0 0, 50% 100%, 100% 0)',
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingTop: '4px' }}>
+                  {/* Wax seal */}
+                  <div style={{
+                    width: '42px', height: '42px', borderRadius: '50%',
+                    background: isOpen ? 'rgba(212,138,112,0.2)' : '#D48A70',
+                    border: isOpen ? '1.5px dashed rgba(212,138,112,0.5)' : '2px solid rgba(42,41,40,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.2rem', flexShrink: 0,
+                    transition: 'all 0.5s ease',
+                    boxShadow: isOpen ? 'none' : '0 2px 8px rgba(212,138,112,0.4)',
+                  }}>
+                    {letter.stampEmoji}
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: 'Instrument Sans', fontSize: '0.8rem', color: 'rgba(42,41,40,0.5)', marginBottom: '0.2rem' }}>
+                      From <span style={{ fontWeight: 'bold', color: '#2A2928' }}>{letter.from}</span>
+                    </div>
+                    <p style={{
+                      fontFamily: 'Instrument Sans',
+                      fontSize: '0.95rem',
+                      color: '#2A2928',
+                      margin: 0,
+                      lineHeight: 1.4,
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: isOpen ? 'unset' : 1,
+                      WebkitBoxOrient: 'vertical',
+                      transition: 'all 0.4s ease',
+                    }}>
+                      {letter.message}
+                    </p>
+                  </div>
+
+                  {/* Sealed indicator */}
+                  {!isOpen && (
+                    <div style={{
+                      fontFamily: 'Space Grotesk', fontSize: '0.65rem', color: 'rgba(42,41,40,0.4)',
+                      textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap',
+                    }}>
+                      sealed
+                    </div>
+                  )}
+                </div>
+
+                {/* Unfolded letter content */}
+                <AnimatePresence>
+                  {openLetterId === letter.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div style={{
+                        marginTop: '1.2rem',
+                        paddingTop: '1.2rem',
+                        borderTop: '1px dashed rgba(42,41,40,0.12)',
+                        background: '#FAF7F1',
+                        padding: '1.2rem',
+                        borderRadius: '3px',
+                        backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(42,41,40,0.07) 24px)',
+                        backgroundSize: '100% 24px',
+                      }}>
+                        <p style={{
+                          fontFamily: 'Instrument Sans',
+                          fontSize: '1.05rem',
+                          lineHeight: 1.7,
+                          color: '#2A2928',
+                          margin: 0,
+                          fontStyle: 'italic',
+                        }}>
+                          {letter.message}
+                        </p>
+                        <div style={{
+                          marginTop: '1rem', textAlign: 'right',
+                          fontFamily: 'Space Grotesk', fontSize: '0.8rem', color: 'rgba(42,41,40,0.4)',
+                          fontStyle: 'italic',
+                        }}>
+                          — {letter.from}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Right column: Opened postcard or letter view */}
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={activeLetter.id}
-            variants={letterVariants}
-            initial="initial"
-            animate="animate"
-            exit={{ opacity: 0, x: 20 }}
-            style={{ 
-              flex: '1.4', 
-              background: '#FAF7F1', // Postcard color
-              border: '1px solid rgba(42, 41, 40, 0.1)', 
-              borderRadius: '8px',
-              padding: '2rem', 
-              position: 'relative', 
-              overflowY: 'auto', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              justifyContent: 'space-between', 
-              boxShadow: '2px 4px 15px rgba(0,0,0,0.05)',
-              backgroundImage: 'radial-gradient(circle at 20px 20px, rgba(42,41,40,0.02) 2px, transparent 2.5px)',
-              backgroundSize: '40px 40px'
-            }}
-          >
-            
-            {/* Postcard postmark & stamp section (Top Right) */}
-            <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {/* Postmark circles */}
-              <div style={{
-                width: '40px',
-                height: '40px',
-                border: '1px dashed rgba(122, 109, 140, 0.4)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.6rem',
-                color: 'rgba(122, 109, 140, 0.6)',
-                fontFamily: 'Space Grotesk',
-                transform: 'rotate(-15deg)',
-                pointerEvents: 'none'
-              }}>
-                EZI
-              </div>
-              {/* Stamp block */}
-              <div style={{
-                width: '44px',
-                height: '52px',
-                border: '2px dashed #D48A70',
-                background: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem',
-                borderRadius: '2px',
-                transform: 'rotate(5deg)',
-                boxShadow: '1px 1px 3px rgba(0,0,0,0.05)'
-              }}>
-                {activeLetter.stampEmoji}
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontFamily: 'Space Grotesk', fontSize: '0.85rem', color: '#7A6D8C', marginBottom: '1.5rem' }}>
-                From: <span style={{ color: '#2A2928', fontWeight: 'bold' }}>{activeLetter.sender}</span>
-              </div>
-              
-              <h3 style={{ fontFamily: 'Instrument Sans', fontSize: '1.4rem', margin: '0 0 1.5rem 0', color: '#2A2928', borderBottom: '1px solid rgba(42, 41, 40, 0.08)', paddingBottom: '0.5rem' }}>
-                {activeLetter.subject}
-              </h3>
-
-              <p style={{
-                fontFamily: 'Instrument Sans',
-                fontSize: '1.05rem',
-                lineHeight: '1.6',
-                color: '#2A2928',
-                margin: 0,
-                whiteSpace: 'pre-wrap'
-              }}>
-                {activeLetter.body}
-              </p>
-            </div>
-
-            <div style={{ marginTop: '2rem', borderTop: '1px dashed rgba(42,41,40,0.1)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'Space Grotesk', fontSize: '0.8rem', color: '#7A6D8C' }}>Received: {activeLetter.date}</span>
-              <span style={{ fontFamily: 'Instrument Sans', fontSize: '0.9rem', fontStyle: 'italic', color: '#D48A70' }}>Warmly, Ezee Team</span>
-            </div>
-
-          </motion.div>
-        </AnimatePresence>
-      </div>
+        {/* Footer */}
+        <div style={{
+          marginTop: '2rem', paddingTop: '1rem',
+          borderTop: '1px dashed rgba(42,41,40,0.12)',
+          fontFamily: 'Space Grotesk', fontSize: '0.8rem',
+          color: 'rgba(42,41,40,0.35)', textAlign: 'center', fontStyle: 'italic',
+        }}>
+          "Everything feels personal."
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
