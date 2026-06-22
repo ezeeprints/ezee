@@ -140,6 +140,22 @@ export default function Navbar() {
         ))}
       </div>
 
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <Link
+          href="/workshop/login"
+          style={{
+            textDecoration: "none",
+            fontSize: 14.5,
+            fontWeight: 600,
+            color: "#D48A70",
+            transition: "color .3s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#b36b52")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#D48A70")}
+        >
+          Vendor Sign In
+        </Link>
+
       <Link
         href="/auth"
         style={{
@@ -167,6 +183,7 @@ export default function Navbar() {
       >
         Start Printing
       </Link>
+      </div>
     </nav>
   );
 }

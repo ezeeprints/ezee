@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+
 import { useUniverse } from '../../universe/UniverseProvider';
 
 type LoginState = 'idle' | 'loading' | 'error' | 'success';
 
 export default function ObservatoryLogin() {
-  const router = useRouter();
+
   const { setUniverseState } = useUniverse();
   const [mounted, setMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginState, setLoginState] = useState<LoginState>('idle');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [twoFactor, setTwoFactor] = useState(['', '', '', '', '', '']); // 6-digit stamp card
@@ -40,22 +42,34 @@ export default function ObservatoryLogin() {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginState('loading');
 
+    // Simulate authentication delay
+    await new Promise(r => setTimeout(r, 2500));
+
+    if (email === 'error@ezee.com') {
+      setLoginState('error');
+      return;
+    }
+
+    // Call the API route — it sets the httpOnly cookie via Set-Cookie header
+    const res = await fetch('/api/auth/observatory', { method: 'POST' });
+    if (!res.ok) { setLoginState('error'); return; }
+
+    setLoginState('success');
+    setUniverseState({ weather: 'clear', timeOfDay: 'goldenHour' });
+
+    // Hard navigation so the middleware re-runs and sees the new cookie
     setTimeout(() => {
-      if (email === 'error@ezee.com') {
-        setLoginState('error');
-      } else {
-        setLoginState('success');
-        setUniverseState({ weather: 'clear', timeOfDay: 'goldenHour' });
-        setTimeout(() => {
-          document.cookie = "ezee_admin_session=true; path=/";
-          router.push('/observatory');
-        }, 3000);
-      }
-    }, 3000);
+      window.location.href = '/observatory';
+    }, 2000);
+  };
+
+  const toggleAuthMode = () => {
+    setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
+    setLoginState('idle');
   };
 
   const dustParticles = mounted ? Array.from({ length: 30 }).map((_, i) => ({
@@ -146,12 +160,32 @@ export default function ObservatoryLogin() {
           }}
         >
           {/* Editorial style header */}
-          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 400, color: '#2A2928', fontFamily: 'Instrument Sans', letterSpacing: '-0.02em' }}>Welcome back.</h1>
-          <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '1.2rem', fontWeight: 400, color: '#666', fontFamily: 'Instrument Sans', fontStyle: 'italic' }}>Everything is peaceful tonight.</h2>
-          <p style={{ marginTop: '2rem', color: '#444', fontSize: '1rem', borderBottom: '1px solid #E8ECEF', paddingBottom: '1rem' }}>Thank you for taking care of the world.</p>
+          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 400, color: '#2A2928', fontFamily: 'Instrument Sans', letterSpacing: '-0.02em' }}>
+            {authMode === 'login' ? 'Welcome back.' : 'Join the Observatory.'}
+          </h1>
+          <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '1.2rem', fontWeight: 400, color: '#666', fontFamily: 'Instrument Sans', fontStyle: 'italic' }}>
+            {authMode === 'login' ? 'Everything is peaceful tonight.' : 'Become a steward of the network.'}
+          </h2>
+          <p style={{ marginTop: '2rem', color: '#444', fontSize: '1rem', borderBottom: '1px solid #E8ECEF', paddingBottom: '1rem' }}>
+            {authMode === 'login' ? 'Thank you for taking care of the world.' : 'Help us maintain peace and order.'}
+          </p>
 
           <form onSubmit={handleLogin} style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             
+            {authMode === 'signup' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#666' }}>Full Name</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={loginState === 'loading' || loginState === 'success'}
+                  style={{ padding: '0.8rem 0', border: 'none', borderBottom: '1px solid #CCC', background: 'transparent', fontSize: '1.1rem', outline: 'none', transition: 'border 0.3s' }}
+                  placeholder="e.g. Elias Thorne"
+                />
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#666' }}>Email</label>
               <input 
@@ -232,8 +266,18 @@ export default function ObservatoryLogin() {
                 ...(loginState === 'success' ? { background: '#2A2928', color: '#FFF' } : {})
               }}
             >
-              {loginState === 'loading' ? 'Checking records...' : loginState === 'success' ? 'Welcome back' : 'Sign In'}
+              {loginState === 'loading' ? (authMode === 'login' ? 'Checking records...' : 'Registering steward...') : loginState === 'success' ? (authMode === 'login' ? 'Welcome back' : 'Welcome aboard') : (authMode === 'login' ? 'Sign In' : 'Apply')}
             </button>
+            
+            <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={toggleAuthMode}
+                style={{ background: 'none', border: 'none', color: '#666', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                {authMode === 'login' ? "No credentials? Apply here" : "Already a steward? Sign in"}
+              </button>
+            </div>
           </form>
 
         </motion.div>

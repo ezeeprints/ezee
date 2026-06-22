@@ -6,12 +6,9 @@ export function middleware(request: NextRequest) {
 
   // Protect /observatory routes
   if (pathname === '/observatory' || pathname.startsWith('/observatory/')) {
-    // If they are not going to the login page, redirect them to the login page
-    // Note: In a real app we'd check for a session cookie here.
-    // For this simulation, if we don't have a fake cookie, we redirect.
-    // We will use a dummy cookie check just to satisfy the pattern.
     const hasAdminSession = request.cookies.has('ezee_admin_session');
     
+    // Redirect to login if no session and not already on the login page
     if (!hasAdminSession && pathname !== '/observatory/login') {
       return NextResponse.redirect(new URL('/observatory/login', request.url));
     }
@@ -21,6 +18,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/workshop' || pathname.startsWith('/workshop/')) {
     const hasVendorSession = request.cookies.has('ezee_vendor_session');
 
+    // Redirect to login if no session and not already on the login page
     if (!hasVendorSession && pathname !== '/workshop/login') {
       return NextResponse.redirect(new URL('/workshop/login', request.url));
     }

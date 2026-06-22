@@ -2,18 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+
 import { useUniverse } from '../../universe/UniverseProvider';
 
 type LoginState = 'idle' | 'loading' | 'error' | 'success';
 
 export default function WorkshopLogin() {
-  const router = useRouter();
+
   const { setUniverseState } = useUniverse();
   const [mounted, setMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginState, setLoginState] = useState<LoginState>('idle');
   const [shopId, setShopId] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [shopName, setShopName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
@@ -22,24 +25,34 @@ export default function WorkshopLogin() {
     setUniverseState({ weather: 'rain', timeOfDay: 'goldenHour' });
   }, [setUniverseState]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginState('loading');
 
-    // Simulate authentication logic
+    // Simulate authentication delay
+    await new Promise(r => setTimeout(r, 2000));
+
+    if (shopId === 'error') {
+      setLoginState('error');
+      return;
+    }
+
+    // Call the API route — it sets the httpOnly cookie via Set-Cookie header
+    const res = await fetch('/api/auth/workshop', { method: 'POST' });
+    if (!res.ok) { setLoginState('error'); return; }
+
+    setLoginState('success');
+    setUniverseState({ timeOfDay: 'morning', weather: 'clear' });
+
+    // Hard navigation so the middleware re-runs and sees the new cookie
     setTimeout(() => {
-      if (shopId === 'error') {
-        setLoginState('error');
-      } else {
-        setLoginState('success');
-        // Brighten lights and transition
-        setUniverseState({ timeOfDay: 'morning', weather: 'clear' });
-        setTimeout(() => {
-          document.cookie = "ezee_vendor_session=true; path=/";
-          router.push('/workshop');
-        }, 2000); // Wait for transition
-      }
-    }, 3000);
+      window.location.href = '/workshop';
+    }, 1800);
+  };
+
+  const toggleAuthMode = () => {
+    setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
+    setLoginState('idle');
   };
 
   const rainDrops = mounted ? Array.from({ length: 50 }).map((_, i) => ({
@@ -154,12 +167,45 @@ export default function WorkshopLogin() {
             ))}
           </div>
 
-          <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 600, color: 'var(--texture-ink)', fontFamily: 'Cabinet Grotesk' }}>Welcome back.</h1>
-          <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '1.5rem', fontWeight: 500, color: '#555', fontFamily: 'Cabinet Grotesk' }}>The workshop has been waiting.</h2>
-          <p style={{ marginTop: '1rem', color: '#666', fontSize: '1.1rem' }}>Let&apos;s help someone prepare something important.</p>
+          <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 600, color: 'var(--texture-ink)', fontFamily: 'Cabinet Grotesk' }}>
+            {authMode === 'login' ? 'Welcome back.' : 'Start your workshop.'}
+          </h1>
+          <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '1.5rem', fontWeight: 500, color: '#555', fontFamily: 'Cabinet Grotesk' }}>
+            {authMode === 'login' ? 'The workshop has been waiting.' : 'Join the Ezee vendor network.'}
+          </h2>
+          <p style={{ marginTop: '1rem', color: '#666', fontSize: '1.1rem' }}>
+            {authMode === 'login' ? "Let's help someone prepare something important." : "Open your digital doors to thousands of students."}
+          </p>
 
           <form onSubmit={handleLogin} style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
+            {authMode === 'signup' && (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#444' }}>Shop Name</label>
+                  <input 
+                    type="text" 
+                    value={shopName}
+                    onChange={(e) => setShopName(e.target.value)}
+                    disabled={loginState === 'loading' || loginState === 'success'}
+                    style={{ padding: '0.8rem', border: '1px solid #DDD', borderRadius: '6px', background: '#FAF9F7', fontSize: '1rem', outline: 'none', transition: 'border 0.3s' }}
+                    placeholder="E.g., Campus Central Print"
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#444' }}>Email Address</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loginState === 'loading' || loginState === 'success'}
+                    style={{ padding: '0.8rem', border: '1px solid #DDD', borderRadius: '6px', background: '#FAF9F7', fontSize: '1rem', outline: 'none', transition: 'border 0.3s' }}
+                    placeholder="shop@example.com"
+                  />
+                </div>
+              </>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#444' }}>Shop ID</label>
               <input 
@@ -214,8 +260,18 @@ export default function WorkshopLogin() {
                 border: 'none', borderRadius: '6px', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.3s' 
               }}
             >
-              {loginState === 'loading' ? 'Waking up the workshop...' : loginState === 'success' ? 'Welcome back' : 'Sign In'}
+              {loginState === 'loading' ? (authMode === 'login' ? 'Waking up the workshop...' : 'Setting up your bench...') : loginState === 'success' ? (authMode === 'login' ? 'Welcome back' : 'Welcome aboard') : (authMode === 'login' ? 'Sign In' : 'Create Shop')}
             </button>
+            
+            <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={toggleAuthMode}
+                style={{ background: 'none', border: 'none', color: '#8A5034', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                {authMode === 'login' ? "Don't have an account? Sign up" : "Already have a workshop? Sign in"}
+              </button>
+            </div>
           </form>
 
         </motion.div>

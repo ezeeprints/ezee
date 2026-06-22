@@ -1,162 +1,1172 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import styles from '../../workshop/vendor.module.css';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import { useUniverse } from '../../universe/UniverseProvider';
-import Workbench from '@/app/components/vendor/Workbench';
-import Printers from '@/app/components/vendor/Printers';
-import EziApprentice from '@/app/components/vendor/EziApprentice';
-import CompletionShelf from '@/app/components/vendor/CompletionShelf';
-import MakerMemories from '@/app/components/vendor/MakerMemories';
+/* ───────────────────────────────────────────────
+   EZEE UNIVERSE — Workshop (Vendor) Dashboard
+   Ported 1:1 from ezee-workbench-prototype.html
+   Login page is untouched — this is the post-auth view.
+─────────────────────────────────────────────── */
 
+// ── Tiny icon renderer ────────────────────────────────────────────────────────
+const ICONS: Record<string, string> = {
+  bench: 'M3 9h18M3 9l1.5-4h15L21 9M5 9v10h14V9M9 13h6',
+  printer: 'M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v8H6z',
+  box: 'M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8',
+  coin: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+  star: 'M12 2l3 7 7 .5-5.5 4.5 2 7L12 17l-6.5 4 2-7L2 9.5 9 9z',
+  stock: 'M3 3h18v4H3zM5 7v14h14V7M9 11h6',
+  check: 'M20 6L9 17l-5-5',
+  x: 'M18 6L6 18M6 6l12 12',
+  bell: 'M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
+  clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+  hand: 'M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8a8 8 0 0 0 8 8h2a8 8 0 0 0 8-8v-1a2 2 0 0 0-4 0',
+  play: 'M5 3l14 9-14 9V3z',
+  flame: 'M12 2s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s3 2 4-6z',
+  gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4.5a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4.5a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.17l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11h.1a2 2 0 0 1 0 4h-.1z',
+  alert: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+};
+
+function Ic({ name, size = 18 }: { name: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: 'block', flexShrink: 0 }}>
+      <path d={ICONS[name] || ''} />
+    </svg>
+  );
+}
+
+// ── Ezi SVG ─────────────────────────────────────────────────────────────────
+function eziSVG(mood: 'calm' | 'focused' | 'happy' | 'sleepy') {
+  const eyes: Record<string, string> = {
+    calm: '<circle cx="84" cy="104" r="5" fill="#2A2928"/><circle cx="116" cy="104" r="5" fill="#2A2928"/>',
+    focused: '<circle cx="84" cy="104" r="14" fill="none" stroke="#2A2928" stroke-width="3"/><circle cx="116" cy="104" r="14" fill="none" stroke="#2A2928" stroke-width="3"/><circle cx="84" cy="104" r="4" fill="#2A2928"/><circle cx="116" cy="104" r="4" fill="#2A2928"/>',
+    happy: '<path d="M74 105 Q84 95 90 105" stroke="#2A2928" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M110 105 Q116 95 126 105" stroke="#2A2928" stroke-width="4" fill="none" stroke-linecap="round"/>',
+    sleepy: '<path d="M76 105 Q84 109 92 105" stroke="#2A2928" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M108 105 Q116 109 124 105" stroke="#2A2928" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+  };
+  const mouth = mood === 'happy'
+    ? '<path d="M94 123 Q100 133 106 123" stroke="#2A2928" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'sleepy'
+    ? '<ellipse cx="100" cy="125" rx="4" ry="5" fill="#2A2928" opacity=".7"/>'
+    : '<path d="M96 124 Q100 127 104 124" stroke="#2A2928" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+  const zzz = mood === 'sleepy'
+    ? '<text x="150" y="40" font-family="Space Grotesk" font-size="16" fill="#9A9183">z</text><text x="162" y="26" font-family="Space Grotesk" font-size="20" fill="#9A9183">z</text>'
+    : '';
+  return `<svg viewBox="0 0 200 250" width="74" height="90">
+    <defs><filter id="ss2" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#2A2928" flood-opacity=".15"/></filter></defs>
+    ${zzz}
+    <g filter="url(#ss2)">
+      <path d="M100 30 C140 30 170 80 180 150 C185 190 160 230 100 230 C40 230 15 190 20 150 C30 80 60 30 100 30 Z" fill="#2A2928"/>
+      <ellipse cx="100" cy="108" rx="58" ry="44" fill="#FAF7F1"/>
+      ${eyes[mood] || eyes.calm}
+      <ellipse cx="66" cy="120" rx="11" ry="7" fill="#D48A70" opacity=".55"/>
+      <ellipse cx="134" cy="120" rx="11" ry="7" fill="#D48A70" opacity=".55"/>
+      ${mouth}
+      <path d="M72 150 L128 150 L138 205 L62 205 Z" fill="#5C3D1D"/>
+      <path d="M72 150 L58 124 M128 150 L142 124" stroke="#36220E" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <rect x="90" y="168" width="20" height="16" rx="2" fill="#36220E"/>
+      <line x1="96" y1="160" x2="96" y2="172" stroke="#D4AF37" stroke-width="3" stroke-linecap="round"/>
+      <g transform="translate(12,-8) rotate(-10 100 40)"><ellipse cx="100" cy="40" rx="34" ry="14" fill="#A9B59D"/><path d="M100 26 L102 19 L98 19 Z" fill="#A9B59D"/></g>
+    </g>
+  </svg>`;
+}
+
+// ── Data types ────────────────────────────────────────────────────────────────
+interface Order {
+  id: string; student: string; avatar: string; color: string;
+  title: string; pages: number; mode: 'bw' | 'color'; binding: 'none' | 'staple' | 'spiral' | 'softbound';
+  copies: number; urgent: boolean; paid: boolean; payLabel: string;
+  status: 'new' | 'printing' | 'ready' | 'done' | 'rejected';
+  station: string | null; progress: number;
+  createdAt: number; pickup: string | null; price: number;
+}
+interface Station { id: string; name: string; sub: string; job: string | null; }
+interface StockItem { nm: string; v: number; cls: 'ok' | 'low' | 'crit'; unit: string; }
+interface Toast { id: number; msg: string; icon: string; kind: string; }
+
+// ── Student pool & factories ──────────────────────────────────────────────────
+const STUDENT_POOL: [string,string,number,string,string,number,string,string,number][] = [
+  ['Aisha Khan','Final Year Thesis',120,'bw','spiral',1,'AK','#7A6D8C',1],
+  ['Rahul Menon','DBMS Lab Record',46,'bw','staple',2,'RM','#7E8C6F',0],
+  ['Zoya Fernandes','Architecture Sheets',12,'color','none',1,'ZF','#C2674A',1],
+  ['Team Void','Hackathon Deck',18,'color','none',4,'TV','#B8912E',0],
+  ['Sneha Rao','Resume — Placement',2,'color','none',6,'SR','#7A6D8C',1],
+  ['Imran Sheikh','Maths Unit 3 Notes',34,'bw','staple',1,'IS','#7E8C6F',0],
+  ['Divya Nair','Project Report',88,'bw','softbound',2,'DN','#C2674A',0],
+  ['Karthik B','Seminar Handout',6,'bw','none',30,'KB','#B8912E',0],
+  ['Meghana S','Internship Certificate',1,'color','none',3,'MS','#7A6D8C',0],
+  ['Faiz Ahmed','Wedding Card Proof',1,'color','none',1,'FA','#C2674A',1],
+];
+
+function priceOf(o: Pick<Order,'pages'|'mode'|'binding'|'copies'>) {
+  const per = o.mode === 'color' ? 5 : 1.2;
+  const bind = { none: 0, staple: 5, spiral: 35, softbound: 80 }[o.binding];
+  return Math.round((o.pages * per + bind) * o.copies);
+}
+function mkPickup() {
+  const a = 'ABCDEFGHJKMNPQRSTUVWXYZ', n = '23456789';
+  return a[Math.floor(Math.random()*a.length)]+n[Math.floor(Math.random()*n.length)]+n[Math.floor(Math.random()*n.length)];
+}
+
+let SEQ = 25;
+function newOrder(forceStatus?: Order['status']): Order {
+  const t = STUDENT_POOL[Math.floor(Math.random()*STUDENT_POOL.length)];
+  const o: Partial<Order> = {
+    id: 'A'+(SEQ++), student: t[0], avatar: t[6], color: t[7], title: t[1],
+    pages: t[2], mode: t[3] as 'bw'|'color', binding: t[4] as Order['binding'], copies: t[5],
+    urgent: !!t[8], paid: Math.random() > 0.25,
+    status: forceStatus || 'new', station: null, progress: 0,
+    createdAt: Date.now() - (forceStatus ? Math.random()*2.4e6 : 0),
+    pickup: null,
+  };
+  o.price = priceOf(o as Order);
+  o.payLabel = o.paid ? 'Paid' : 'COD';
+  return o as Order;
+}
+
+function initOrders(): Order[] {
+  const orders: Order[] = [
+    newOrder('new'), newOrder('new'), newOrder('new'),
+    newOrder('printing'), newOrder('printing'),
+    newOrder('ready'), newOrder('done'), newOrder('done'), newOrder('done'),
+  ];
+  orders.forEach(o => {
+    if (o.status === 'printing') o.progress = Math.random()*0.7+0.1;
+    if (o.status === 'ready' || o.status === 'done') o.pickup = mkPickup();
+  });
+  return orders;
+}
+
+function initStations(): Station[] {
+  return [
+    { id: 'veteran', name: 'The Veteran', sub: 'Heavy mono · binding', job: null },
+    { id: 'speedster', name: 'Speedster', sub: 'Fast mono runs', job: null },
+    { id: 'colorpro', name: 'Color Pro', sub: 'CMYK · sheets', job: null },
+  ];
+}
+
+function initStock(): StockItem[] {
+  return [
+    { nm: 'A4 paper', v: 0.72, cls: 'ok', unit: 'reams' },
+    { nm: 'A3 paper', v: 0.41, cls: 'ok', unit: 'reams' },
+    { nm: 'Mono toner', v: 0.55, cls: 'ok', unit: '' },
+    { nm: 'Color ink', v: 0.18, cls: 'crit', unit: '' },
+    { nm: 'Spiral coils', v: 0.34, cls: 'low', unit: '' },
+  ];
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const BIND_LABEL: Record<string, string> = { none: 'loose', staple: 'stapled', spiral: 'spiral', softbound: 'soft-bound' };
+function waited(o: Order) {
+  const m = Math.max(0, Math.round((Date.now()-o.createdAt)/60000));
+  return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
+}
+function fmtAgo(t: number) {
+  const m = Math.round((Date.now()-t)/60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m}m ago` : `${Math.floor(m/60)}h ago`;
+}
+function reclassStock(stock: StockItem[]): StockItem[] {
+  return stock.map(s => ({ ...s, cls: s.v < 0.2 ? 'crit' : s.v < 0.4 ? 'low' : 'ok' }));
+}
+
+// ── CSS (injected once) ───────────────────────────────────────────────────────
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+.ws-root{
+  --paper:#FAF7F1;--paper-2:#F3EDE3;--paper-3:#EAE2D4;--paper-edge:#E0D6C5;
+  --ink:#2A2928;--ink-2:#6E665B;--ink-3:#9A9183;
+  --terracotta:#C2674A;--terracotta-soft:#D48A70;--plum:#7A6D8C;
+  --sage:#7E8C6F;--sage-soft:#A9B59D;--brass:#B8912E;--brass-soft:#D4AF37;
+  --wood:#4A3219;--wood-deep:#36220E;--crimson:#9B2C2C;
+  --rest:0 1px 0 rgba(255,255,255,.6) inset,0 2px 5px rgba(42,41,40,.06),0 8px 18px rgba(42,41,40,.05);
+  --hover:0 1px 0 rgba(255,255,255,.7) inset,0 4px 10px rgba(42,41,40,.09),0 14px 30px rgba(42,41,40,.08);
+  --press:inset 0 2px 6px rgba(42,41,40,.18);
+  --well:inset 0 2px 5px rgba(42,41,40,.10);
+  --spring:520ms cubic-bezier(.34,1.4,.5,1);--soft:400ms cubic-bezier(.25,1,.5,1);
+  --r:14px;--r-sm:9px;
+  font-family:'Instrument Sans',system-ui,sans-serif;color:var(--ink);
+  background:linear-gradient(180deg,var(--paper) 0%,var(--paper-2) 100%);
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  box-sizing:border-box;
+}
+.ws-root *{box-sizing:border-box;margin:0;padding:0}
+.ws-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.ws-root ::selection{background:var(--terracotta-soft);color:var(--paper)}
+.ws-grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.ws-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+/* rail */
+.ws-rail{position:sticky;top:0;align-self:start;height:100vh;padding:22px 16px;
+  display:flex;flex-direction:column;gap:6px;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,237,227,.35));
+  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px)}
+.ws-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px}
+.ws-seal{width:34px;height:34px;border-radius:10px;flex:none;
+  background:linear-gradient(160deg,var(--ink),#3c3a37);color:var(--paper);
+  display:grid;place-items:center;box-shadow:var(--rest);font-family:'Space Grotesk';font-weight:700;font-size:15px;position:relative}
+.ws-seal::after{content:"";position:absolute;inset:3px;border:1px solid rgba(250,247,241,.18);border-radius:7px}
+.ws-brand b{font-family:'Space Grotesk';letter-spacing:-.02em;font-size:16px}
+.ws-brand small{display:block;font-size:10px;color:var(--ink-3);letter-spacing:.16em;text-transform:uppercase;margin-top:1px}
+.ws-ezi-card{margin:6px 4px 14px;padding:14px 12px 12px;border-radius:var(--r);
+  background:linear-gradient(165deg,#fffdf8,#efe7d9);
+  box-shadow:var(--rest);border:1px solid var(--paper-edge);text-align:center;position:relative;overflow:hidden}
+.ws-ezi-glow{position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:120px;height:120px;
+  background:radial-gradient(circle,rgba(212,175,55,.28),transparent 68%);opacity:.3;pointer-events:none}
+.ws-ezi-say{position:relative;z-index:1;margin-top:4px;font-size:12px;color:var(--ink-2);min-height:30px;line-height:1.35;transition:opacity var(--soft)}
+.ws-ezi-breathe{animation:ws-breathe 5.5s ease-in-out infinite;position:relative;z-index:1}
+@keyframes ws-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes ws-chime{0%{box-shadow:0 0 0 0 rgba(122,109,140,.5)}100%{box-shadow:0 0 0 16px rgba(122,109,140,0)}}
+.ws-chiming{animation:ws-chime 1.4s ease-out}
+.ws-nav{display:flex;flex-direction:column;gap:2px;margin-top:2px}
+.ws-nav button{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;
+  font-size:13.5px;color:var(--ink-2);font-weight:500;transition:background var(--soft),color var(--soft);
+  text-align:left;width:100%}
+.ws-nav button .ic{width:17px;height:17px;flex:none;color:var(--ink-3);transition:color var(--soft)}
+.ws-nav button:hover{background:rgba(42,41,40,.045);color:var(--ink)}
+.ws-nav button.on{background:linear-gradient(120deg,rgba(122,109,140,.16),rgba(122,109,140,.07));color:var(--ink);box-shadow:var(--rest)}
+.ws-nav button.on .ic{color:var(--plum)}
+.ws-count{margin-left:auto;font-family:'Space Grotesk';font-size:11px;font-weight:600;min-width:20px;height:20px;padding:0 5px;
+  display:grid;place-items:center;border-radius:6px;background:rgba(42,41,40,.06);color:var(--ink-2)}
+.ws-nav button.on .ws-count{background:var(--plum);color:#fff}
+.ws-rail-foot{display:flex;flex-direction:column;gap:8px;padding:8px 6px 2px;border-top:1px solid var(--paper-edge);margin-top:6px}
+.ws-toggle{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--ink-2);padding:6px 6px}
+.ws-sw{width:40px;height:23px;border-radius:20px;background:var(--paper-3);box-shadow:var(--well);position:relative;transition:background var(--spring);flex:none}
+.ws-sw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--rest);transition:transform var(--spring)}
+.ws-sw.on{background:var(--sage)}.ws-sw.on::after{transform:translateX(17px)}
+.ws-sw.brass.on{background:var(--brass)}
+/* main */
+.ws-main{min-width:0;display:flex;flex-direction:column}
+.ws-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;
+  padding:14px 26px;border-bottom:1px solid var(--paper-edge);
+  background:linear-gradient(180deg,rgba(250,247,241,.92),rgba(250,247,241,.78));backdrop-filter:blur(8px)}
+.ws-topbar h1{font-family:'Space Grotesk';font-size:19px;letter-spacing:-.02em;font-weight:600}
+.ws-sub{font-size:12px;color:var(--ink-3);margin-top:1px}
+.ws-clockchip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  padding:7px 12px;border-radius:10px;background:#fff;box-shadow:var(--rest);border:1px solid var(--paper-edge)}
+.ws-clockchip .mono{font-weight:600;color:var(--ink);font-family:'Space Grotesk'}
+.ws-openchip{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:10px;
+  background:linear-gradient(160deg,#fff,#f1ece2);box-shadow:var(--rest);border:1px solid var(--paper-edge)}
+.ws-openchip .dot{width:8px;height:8px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px rgba(126,140,111,.18)}
+.ws-openchip.closed .dot{background:var(--ink-3);box-shadow:0 0 0 3px rgba(154,145,131,.18)}
+.ws-canvas{padding:22px 26px 60px;max-width:1340px;width:100%}
+/* stats */
+.ws-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.ws-stat{padding:14px 15px;border-radius:var(--r);background:linear-gradient(165deg,#fffdf8,#f1ebdf);box-shadow:var(--rest);border:1px solid var(--paper-edge);position:relative;overflow:hidden}
+.ws-stat .label{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;font-weight:600;color:var(--ink-3);margin-bottom:7px}
+.ws-stat .big{font-family:'Space Grotesk';font-size:27px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.ws-stat .big small{font-size:14px;color:var(--ink-3);font-weight:500}
+.ws-stat .trail{font-size:11.5px;color:var(--ink-2);margin-top:5px}
+.ws-edge{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px}
+/* work layout */
+.ws-work{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+/* tabs */
+.ws-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.ws-tab{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;
+  color:var(--ink-2);background:transparent;transition:all var(--soft);font-family:'Space Grotesk'}
+.ws-tab:hover{background:rgba(42,41,40,.05)}
+.ws-tab.on{background:#fff;color:var(--ink);box-shadow:var(--rest);border:1px solid var(--paper-edge)}
+.ws-tab .pill{font-size:11px;min-width:19px;height:19px;padding:0 5px;border-radius:6px;display:grid;place-items:center;
+  background:rgba(42,41,40,.08);color:var(--ink-2)}
+.ws-tab.on .pill{background:var(--ink);color:#fff}
+/* queue */
+.ws-queue{display:flex;flex-direction:column;gap:13px}
+.ws-docket{position:relative;display:grid;grid-template-columns:64px 1fr auto;
+  background:linear-gradient(180deg,#fffdf8,#f7f1e6);
+  border:1px solid var(--paper-edge);border-radius:var(--r);
+  box-shadow:var(--rest);overflow:hidden;cursor:pointer;
+  transition:box-shadow var(--spring),transform var(--spring),border-color var(--soft);
+  animation:ws-dropin var(--spring) both}
+@keyframes ws-dropin{from{opacity:0;transform:translateY(10px) rotate(-.4deg)}to{opacity:1;transform:none}}
+.ws-docket:hover{box-shadow:var(--hover);transform:translateY(-2px)}
+.ws-docket.sel{border-color:var(--plum);box-shadow:var(--hover),0 0 0 1px var(--plum)}
+.ws-docket.urgent-card{background:linear-gradient(180deg,#fff7f3,#f8ece5)}
+.ws-stub{position:relative;background:repeating-linear-gradient(180deg,#efe6d6 0 7px,#e9dfcd 7px 14px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 6px;
+  border-right:2px dashed rgba(42,41,40,.16)}
+.ws-stub .code{font-family:'Space Grotesk';font-weight:700;font-size:13px;letter-spacing:.02em;color:var(--ink);
+  writing-mode:vertical-rl;transform:rotate(180deg)}
+.ws-stub .hole{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--paper);box-shadow:var(--well);right:-6px}
+.ws-stub .hole.t{top:11px}.ws-stub .hole.b{bottom:11px}
+.ws-dbody{padding:13px 15px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ws-drow1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ws-dtitle{font-family:'Space Grotesk';font-weight:600;font-size:15.5px;letter-spacing:-.01em;color:var(--ink)}
+.ws-dwho{font-size:12.5px;color:var(--ink-2)}
+.ws-dspec{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ws-dspec .x{color:var(--ink-3)}
+.ws-dmeta{display:flex;align-items:center;gap:12px;margin-top:1px;font-size:12px;color:var(--ink-3)}
+.ws-dact{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:8px;padding:13px 15px 13px 6px}
+.ws-price{font-family:'Space Grotesk';font-weight:700;font-size:17px;letter-spacing:-.02em}
+/* stamp */
+.ws-stamp{position:absolute;top:9px;right:104px;font-family:'Space Grotesk';font-weight:700;font-size:10px;
+  letter-spacing:.16em;text-transform:uppercase;padding:3px 8px;border-radius:5px;transform:rotate(-4deg);
+  border:1.5px solid currentColor;opacity:.82}
+.ws-stamp.s-new{color:var(--plum)}.ws-stamp.s-printing{color:var(--brass)}.ws-stamp.s-ready{color:var(--sage)}
+.ws-stamp.s-done{color:var(--ink-3)}.ws-stamp.s-urgent{color:var(--terracotta)}
+/* tags */
+.ws-tag{display:inline-flex;align-items:center;gap:5px;font-family:'Space Grotesk';font-size:10.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:6px;background:rgba(42,41,40,.05);color:var(--ink-2)}
+.ws-tag.urgent{background:rgba(194,103,74,.13);color:var(--terracotta)}
+.ws-tag.color{background:rgba(122,109,140,.13);color:var(--plum)}
+/* pay */
+.ws-pay{font-weight:600}
+.ws-pay.paid{color:var(--sage)}.ws-pay.cod{color:var(--brass)}
+/* buttons */
+.ws-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:9px;font-size:13px;font-weight:600;
+  font-family:'Space Grotesk';box-shadow:var(--rest);transition:transform 90ms ease,box-shadow var(--soft),background var(--soft);
+  border:1px solid transparent;white-space:nowrap;cursor:pointer}
+.ws-btn:active{transform:translateY(1px);box-shadow:var(--press)}
+.ws-btn.primary{background:linear-gradient(165deg,#34322e,var(--ink));color:var(--paper)}
+.ws-btn.sage{background:linear-gradient(165deg,#8a9a78,var(--sage));color:#fff}
+.ws-btn.brass{background:linear-gradient(165deg,#c79e36,var(--brass));color:#fff}
+.ws-btn.terra{background:linear-gradient(165deg,#d07a5c,var(--terracotta));color:#fff}
+.ws-btn.ghost{background:#fff;color:var(--ink-2);border-color:var(--paper-edge)}
+.ws-btn.ghost:hover{color:var(--ink)}
+.ws-btn.sm{padding:6px 11px;font-size:12px}
+/* side panels */
+.ws-side{display:flex;flex-direction:column;gap:16px;position:sticky;top:84px}
+.ws-panel{border-radius:var(--r);background:linear-gradient(165deg,#fffdf8,#f1ebdf);box-shadow:var(--rest);border:1px solid var(--paper-edge);overflow:hidden}
+.ws-panel h3{font-family:'Space Grotesk';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  padding:13px 15px 0;font-weight:600}
+.ws-pbody{padding:12px 15px 15px}
+.ws-station{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px dashed var(--paper-edge)}
+.ws-station:last-child{border-bottom:none}
+.ws-st-icon{width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;background:var(--paper-3);box-shadow:var(--well);color:var(--ink-2)}
+.ws-station.busy .ws-st-icon{background:linear-gradient(160deg,#e7cf86,#d4af37);color:#5a4710;box-shadow:var(--rest)}
+.ws-st-main{flex:1;min-width:0}
+.ws-st-name{font-family:'Space Grotesk';font-weight:600;font-size:13px}
+.ws-st-job{font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ws-st-idle{font-size:11.5px;color:var(--ink-3)}
+.ws-bar{height:5px;border-radius:4px;background:var(--paper-3);box-shadow:var(--well);margin-top:5px;overflow:hidden}
+.ws-bar>i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--brass-soft),var(--brass));transition:width 600ms linear}
+.ws-bar.ok>i{background:linear-gradient(90deg,var(--sage-soft),var(--sage))}
+.ws-bar.low>i{background:linear-gradient(90deg,#d8a25c,var(--brass))}
+.ws-bar.crit>i{background:linear-gradient(90deg,#cf7a5c,var(--terracotta))}
+.ws-stock-row{display:flex;align-items:center;gap:10px;padding:8px 0}
+.ws-stock-row .nm{font-size:13px;font-weight:500;flex:1}
+.ws-stock-row .ws-bar{width:88px;margin:0}
+.ws-stock-row .v{font-family:'Space Grotesk';font-size:11.5px;font-weight:600;color:var(--ink-2);width:34px;text-align:right}
+.ws-stock-warn{margin-top:10px;padding:9px 11px;border-radius:9px;background:rgba(194,103,74,.10);color:var(--terracotta);
+  font-size:12px;display:flex;gap:8px;align-items:flex-start;line-height:1.4}
+/* empty */
+.ws-empty{text-align:center;padding:46px 20px;color:var(--ink-3)}
+.ws-empty b{display:block;font-family:'Space Grotesk';color:var(--ink-2);font-size:15px;margin-bottom:3px}
+/* drawer */
+.ws-scrim{position:fixed;inset:0;background:rgba(42,41,40,.32);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity var(--soft);z-index:70}
+.ws-scrim.on{opacity:1;pointer-events:auto}
+.ws-drawer{position:fixed;top:0;right:-460px;width:440px;max-width:92vw;height:100vh;z-index:80;
+  background:linear-gradient(180deg,var(--paper),var(--paper-2));box-shadow:-20px 0 50px rgba(42,41,40,.18);
+  border-left:1px solid var(--paper-edge);transition:right var(--spring);display:flex;flex-direction:column}
+.ws-drawer.on{right:0}
+.ws-drawer-head{padding:18px 20px 14px;border-bottom:1px solid var(--paper-edge);display:flex;align-items:flex-start;gap:12px}
+.ws-drawer-head .xbtn{margin-left:auto;width:32px;height:32px;border-radius:8px;background:#fff;box-shadow:var(--rest);display:grid;place-items:center;color:var(--ink-2)}
+.ws-drawer-body{padding:18px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+.ws-kv{display:grid;grid-template-columns:108px 1fr;gap:8px 12px;font-size:13.5px}
+.ws-kv .k{color:var(--ink-3);font-family:'Space Grotesk';font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.ws-kv .v{color:var(--ink);font-weight:500}
+.ws-bill{border-top:1px dashed var(--paper-edge);padding-top:13px;display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.ws-bill .ln{display:flex;justify-content:space-between;color:var(--ink-2)}
+.ws-bill .ln.tot{border-top:1px solid var(--paper-edge);padding-top:8px;margin-top:3px;color:var(--ink);font-weight:700;font-family:'Space Grotesk';font-size:16px}
+.ws-timeline{display:flex;flex-direction:column;gap:0}
+.ws-tl{display:flex;gap:11px;padding-bottom:14px;position:relative}
+.ws-tl:not(:last-child)::before{content:"";position:absolute;left:6px;top:16px;bottom:0;width:1.5px;background:var(--paper-edge)}
+.ws-tl .dot{width:13px;height:13px;border-radius:50%;flex:none;margin-top:2px;background:var(--paper-3);box-shadow:var(--well)}
+.ws-tl.done .dot{background:var(--sage);box-shadow:0 0 0 3px rgba(126,140,111,.16)}
+.ws-tl .ttext b{font-family:'Space Grotesk';font-size:13px;font-weight:600;display:block}
+.ws-tl .ttext small{font-size:11.5px;color:var(--ink-3)}
+.ws-drawer-foot{padding:14px 20px;border-top:1px solid var(--paper-edge);display:flex;gap:9px;background:rgba(255,255,255,.4)}
+.ws-drawer-foot .ws-btn{flex:1;justify-content:center}
+.ws-pickup{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:11px;
+  background:linear-gradient(160deg,#f0f3ea,#e6ecdb);box-shadow:var(--well);border:1px solid rgba(126,140,111,.3)}
+.ws-pickup .lbl{flex:1}.ws-pickup .lbl small{display:block;color:var(--sage);font-weight:600}
+.ws-pickup .pc{font-family:'Space Grotesk';font-weight:700;font-size:26px;letter-spacing:.18em;color:var(--ink)}
+.ws-doc-preview{aspect-ratio:1/1.1;border-radius:11px;background:repeating-linear-gradient(135deg,#fff 0 14px,#f6f0e6 14px 28px);
+  box-shadow:var(--well);border:1px solid var(--paper-edge);display:grid;place-items:center;color:var(--ink-3);position:relative;overflow:hidden}
+.ws-doc{width:58%;height:74%;background:#fff;box-shadow:var(--rest);border-radius:3px;padding:14px;display:flex;flex-direction:column;gap:6px;transform:rotate(-1.5deg)}
+.ws-doc i{display:block;height:4px;border-radius:2px;background:var(--paper-3)}
+.ws-doc i:first-child{width:60%;height:7px;background:var(--ink-3)}
+/* toasts */
+.ws-toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;gap:8px;align-items:center}
+.ws-toast{display:flex;align-items:center;gap:10px;padding:11px 17px;border-radius:11px;font-size:13.5px;font-weight:500;
+  background:linear-gradient(160deg,#34322e,var(--ink));color:var(--paper);box-shadow:var(--hover);
+  animation:ws-toastin var(--spring) both}
+.ws-toast.good{--ic:var(--sage-soft)}.ws-toast.warn{--ic:var(--brass-soft)}
+@keyframes ws-toastin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* ledger */
+.ws-ledger{border-radius:var(--r);background:linear-gradient(165deg,#fffdf8,#f1ebdf);box-shadow:var(--rest);border:1px solid var(--paper-edge);overflow:hidden;margin-bottom:18px}
+.ws-ledger-head{padding:14px 17px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--paper-edge)}
+.ws-ledger-head h3{font-family:'Space Grotesk';font-size:15px;font-weight:600;letter-spacing:-.01em}
+.ws-two-col{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+.ws-owl-card{border-radius:var(--r);background:linear-gradient(165deg,#34322e,#26241f);color:var(--paper);box-shadow:var(--hover);padding:18px;position:relative;overflow:hidden}
+.ws-owl-card .ws-insight{font-size:14px;line-height:1.55;margin-top:8px;color:#efe9df}
+.ws-label{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;font-weight:600;color:var(--ink-3)}
+.ws-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Space Grotesk';font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px}
+.ws-badge .d{width:6px;height:6px;border-radius:50%}
+.ws-badge.ok{background:rgba(126,140,111,.14);color:var(--sage)}.ws-badge.ok .d{background:var(--sage)}
+.ws-badge.pend{background:rgba(184,145,46,.15);color:var(--brass)}.ws-badge.pend .d{background:var(--brass)}
+.ws-badge.susp{background:rgba(155,44,44,.12);color:var(--crimson)}.ws-badge.susp .d{background:var(--crimson)}
+table.ws-table{width:100%;border-collapse:collapse;font-size:13.5px}
+table.ws-table thead th{font-family:'Space Grotesk';font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;padding:10px 17px;font-weight:600;border-bottom:1px solid var(--paper-edge)}
+table.ws-table tbody td{padding:13px 17px;border-bottom:1px solid rgba(224,214,197,.55);vertical-align:middle}
+table.ws-table tbody tr{transition:background var(--soft)}
+table.ws-table tbody tr:hover{background:rgba(42,41,40,.025)}
+table.ws-table tbody tr:last-child td{border-bottom:none}
+.ws-rowact{display:flex;gap:7px;justify-content:flex-end}
+.ws-tick{display:flex;gap:11px;padding:11px 0;border-bottom:1px dashed var(--paper-edge);font-size:13px;align-items:center}
+.ws-tick:last-child{border-bottom:none}
+.ws-tick .tk-main{flex:1;min-width:0}.ws-tick .tk-main b{font-weight:600;display:block;font-size:13.5px}
+.ws-tick .tk-main small{color:var(--ink-3);font-size:11.5px}
+`;
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function ToastEl({ t, onRemove }: { t: Toast; onRemove: (id: number) => void }) {
+  useEffect(() => {
+    const timer = setTimeout(() => onRemove(t.id), 3200);
+    return () => clearTimeout(timer);
+  }, [t.id, onRemove]);
+  return (
+    <div className={`ws-toast ${t.kind}`}>
+      <Ic name={t.icon || 'bell'} size={17} />
+      <span>{t.msg}</span>
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function WorkshopRoom() {
-  const { timeOfDay, weather, setUniverseState } = useUniverse();
+  const [orders, setOrders] = useState<Order[]>(() => initOrders());
+  const [stations, setStations] = useState<Station[]>(() => {
+    const s = initStations();
+    const printingOrders = orders.filter(o => o.status === 'printing');
+    // Can't reference orders in the same initializer so use a lazy approach
+    return s;
+  });
+  const [stock, setStock] = useState<StockItem[]>(() => reclassStock(initStock()));
+  const [section, setSection] = useState<string>('queue');
+  const [vendorTab, setVendorTab] = useState<string>('new');
+  const [shopOpen, setShopOpen] = useState(true);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [drawerOrder, setDrawerOrder] = useState<Order | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [clock, setClock] = useState('—');
+  const [wx, setWx] = useState('☀');
+  const [eziMoodState, setEziMoodState] = useState<'calm'|'focused'|'happy'|'sleepy'>('calm');
+  const [eziSay, setEziSay] = useState('Quiet bench. I\'ll keep the trays tidy.');
+  const [earnedToday, setEarnedToday] = useState(1290);
+  const [doneCount, setDoneCount] = useState(3);
+  const toastCounter = useRef(0);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const isNight = timeOfDay === 'night';
-  const isClosingTime = isNight;
-  
-  const toggleClosingTime = () => {
-    setUniverseState({
-      timeOfDay: timeOfDay === 'night' ? 'goldenHour' : 'night',
-      weather: weather === 'rain' ? 'clear' : 'rain'
+  // Assign printing orders to stations on mount
+  useEffect(() => {
+    setStations(prev => {
+      const updated = prev.map(s => ({ ...s, job: null as string | null }));
+      const printing = orders.filter(o => o.status === 'printing');
+      printing.forEach((o, i) => {
+        const s = updated[i % 3];
+        if (s) { s.job = o.id; o.station = s.id; }
+      });
+      return updated;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Inject global CSS once
+  useEffect(() => {
+    if (document.getElementById('ws-style')) return;
+    const el = document.createElement('style');
+    el.id = 'ws-style'; el.textContent = CSS;
+    document.head.appendChild(el);
+  }, []);
+
+  // Clock tick
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date(), h = d.getHours();
+      setClock(d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }));
+      setWx(h >= 17 || h < 6 ? '🌙' : h >= 15 ? '🌤' : h < 8 ? '🌅' : '☀');
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Progress loop
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!shopOpen) return;
+      setOrders(prev => {
+        let changed = false;
+        const updated = prev.map(o => {
+          if (o.status !== 'printing') return o;
+          changed = true;
+          const newProgress = Math.min(1, o.progress + (o.id.endsWith('0') ? 0.06 : 0.045) + Math.random()*0.02);
+          if (newProgress >= 1) {
+            // Mark ready
+            const pickup = mkPickup();
+            addToast(`#${o.id} ready — code ${pickup}`, 'bell', 'good');
+            setStations(prev2 => prev2.map(s => s.job === o.id ? { ...s, job: null } : s));
+            setStock(prev2 => reclassStock(prev2.map((s, i) => {
+              if (i === 0) return { ...s, v: Math.max(0.05, s.v - 0.01*o.copies) };
+              if (i === 3 && o.mode === 'color') return { ...s, v: Math.max(0, s.v - 0.02) };
+              return s;
+            })));
+            return { ...o, status: 'ready' as const, progress: 1, pickup };
+          }
+          return { ...o, progress: newProgress };
+        });
+        return changed ? updated : prev;
+      });
+    }, 1400);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopOpen]);
+
+  // New order arrivals
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!shopOpen) return;
+      setOrders(prev => {
+        if (prev.filter(o => o.status === 'new').length >= 6) return prev;
+        const o = newOrder('new');
+        setEziMoodState('focused');
+        setEziSay(o.urgent ? `Rush order in — ${o.student.split(' ')[0]} needs it fast.` : `New slip from ${o.student.split(' ')[0]}.`);
+        addToast(`New order #${o.id} from ${o.student}`, 'bell');
+        return [...prev, o];
+      });
+    }, 22000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopOpen]);
+
+  // Ezi mood
+  useEffect(() => {
+    const printing = orders.filter(o => o.status === 'printing').length;
+    const waiting = orders.filter(o => o.status === 'new').length;
+    if (!shopOpen) { setEziMoodState('sleepy'); return; }
+    if (printing >= 2 || waiting >= 4) { setEziMoodState('focused'); return; }
+    setEziMoodState('calm');
+  }, [orders, shopOpen]);
+
+  const addToast = useCallback((msg: string, icon: string, kind = '') => {
+    const id = ++toastCounter.current;
+    setToasts(prev => [...prev, { id, msg, icon, kind }]);
+  }, []);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Actions
+  function accept(id: string) {
+    const freeStation = stations.find(s => !s.job);
+    if (!freeStation) { addToast('All presses are busy — finish a run first', 'printer', 'warn'); return; }
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'printing' as const, station: freeStation.id, progress: 0.02 } : o));
+    setStations(prev => prev.map(s => s.id === freeStation.id ? { ...s, job: id } : s));
+    addToast(`#${id} on ${freeStation.name}`, 'play', 'good');
+    setEziMoodState('focused');
+  }
+
+  function markReady(id: string) {
+    const pickup = mkPickup();
+    setOrders(prev => prev.map(o => {
+      if (o.id !== id) return o;
+      addToast(`#${o.id} ready — code ${pickup}`, 'bell', 'good');
+      return { ...o, status: 'ready' as const, progress: 1, pickup };
+    }));
+    setStations(prev => prev.map(s => s.job === id ? { ...s, job: null } : s));
+  }
+
+  function handOver(id: string, code: string) {
+    const o = orders.find(x => x.id === id);
+    if (!o) return false;
+    if (code && code.toUpperCase() !== o.pickup) {
+      addToast('Pickup code doesn\'t match', 'x', 'warn');
+      return false;
+    }
+    setOrders(prev => prev.map(x => x.id === id ? { ...x, status: 'done' as const } : x));
+    setEarnedToday(p => p + o.price);
+    setDoneCount(p => p + 1);
+    setEziMoodState('happy');
+    setEziSay(`Handed #${id} to ${o.student.split(' ')[0]}. 🌱`);
+    addToast(`Handed to ${o.student} · +₹${o.price}`, 'check', 'good');
+    setActiveId(null); setDrawerOrder(null);
+    return true;
+  }
+
+  function reject(id: string) {
+    setOrders(prev => prev.filter(o => o.id !== id));
+    addToast(`#${id} declined`, 'x', 'warn');
+    setActiveId(null); setDrawerOrder(null);
+  }
+
+  function openDrawer(id: string) {
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+    setActiveId(id); setDrawerOrder(o);
+  }
+
+  function closeDrawer() { setActiveId(null); setDrawerOrder(null); }
+
+  // EZI lines
+  const eziLines: Record<string, string[]> = {
+    calm: ["Quiet bench. I'll keep the trays tidy.", "Three slips waiting. No rush — they're paid.", "Coffee's still warm. We're in good shape."],
+    focused: ["Veteran's mid-run. I'll flag jams.", "Steady now — Speedster's flying.", "Heads down. We'll clear this by close."],
+    happy: ["Handed over. Another one home.", "That thesis is off to graduation. 🌱", "Pickup matched. Nice work."],
+    sleepy: ["Shop's shut. I'll dim the lamps.", "Resting the presses. See you at open.", "Goodnight, bench."],
   };
 
-  // Ambient Particles
-  const dustParticles = mounted ? Array.from({ length: 30 }).map((_, i) => ({
-    id: i, x: Math.random() * 100, y: Math.random() * 100,
-    size: Math.random() * 3 + 1, duration: Math.random() * 10 + 10, delay: Math.random() * 5,
-  })) : [];
+  const eziSayText = eziSay || eziLines[eziMoodState]?.[0] || '';
 
-  const rainDrops = mounted && weather === 'rain' ? Array.from({ length: 150 }).map((_, i) => ({
-    id: `rain-${i}`, x: Math.random() * 100, delay: Math.random() * 2, duration: Math.random() * 0.5 + 0.5,
-  })) : [];
+  const navItems = [
+    ['bench', 'The Workbench', 'queue'],
+    ['printer', 'Stations', 'stations'],
+    ['stock', 'Stock room', 'stock'],
+    ['coin', 'Earnings', 'earnings'],
+    ['star', 'Reviews', 'reviews'],
+    ['gear', 'Shop settings', 'settings'],
+  ];
 
+  const TITLES: Record<string, [string, string]> = {
+    queue: ['The Workbench', 'Everything waiting, printing, and ready — on one bench.'],
+    stations: ['Stations', 'Your three presses and what each is running.'],
+    stock: ['Stock room', 'Paper, toner, ink and coils at a glance.'],
+    earnings: ['Earnings', 'What came in today, and what settles to you.'],
+    reviews: ['Reviews', 'What students say after pickup.'],
+    settings: ['Shop settings', 'Hours, services, and pricing.'],
+  };
+  const [pageTitle, pageSub] = TITLES[section] || TITLES.queue;
+
+  const counts = {
+    new: orders.filter(o => o.status === 'new').length,
+    printing: orders.filter(o => o.status === 'printing').length,
+    ready: orders.filter(o => o.status === 'ready').length,
+    done: orders.filter(o => o.status === 'done').length,
+  };
+
+  // ── Render helpers ──────────────────────────────────────────────────────────
+  function Stat({ label, big, unit, color, trail }: { label: string; big: string; unit?: string; color: string; trail: string }) {
+    return (
+      <div className="ws-stat">
+        <div className="ws-edge" style={{ background: color }} />
+        <div className="label">{label}</div>
+        <div className="big">{big}{unit && <small>{unit}</small>}</div>
+        <div className="trail">{trail}</div>
+      </div>
+    );
+  }
+
+  function StatusStamp({ o }: { o: Order }) {
+    if (o.status === 'new') return o.urgent
+      ? <span className="ws-stamp s-urgent">Rush · New</span>
+      : <span className="ws-stamp s-new">New</span>;
+    if (o.status === 'printing') return <span className="ws-stamp s-printing">Printing</span>;
+    if (o.status === 'ready') return <span className="ws-stamp s-ready">Ready</span>;
+    return <span className="ws-stamp s-done">Picked up</span>;
+  }
+
+  function PrimaryAction({ o }: { o: Order }) {
+    if (o.status === 'new') return (
+      <button className={`ws-btn sm ${o.urgent ? 'terra' : 'primary'}`}
+        onClick={e => { e.stopPropagation(); accept(o.id); }}>
+        <Ic name="play" size={15} /> Accept &amp; print
+      </button>
+    );
+    if (o.status === 'printing') return (
+      <button className="ws-btn sm sage" onClick={e => { e.stopPropagation(); markReady(o.id); }}>
+        <Ic name="check" size={15} /> Mark ready
+      </button>
+    );
+    if (o.status === 'ready') return (
+      <button className="ws-btn sm brass" onClick={e => { e.stopPropagation(); openDrawer(o.id); }}>
+        <Ic name="hand" size={15} /> Hand over
+      </button>
+    );
+    return <span className="ws-label" style={{ color: 'var(--ink-3)' }}>Done</span>;
+  }
+
+  function Docket({ o }: { o: Order }) {
+    const isUrgentNew = o.status === 'new' && o.urgent;
+    return (
+      <article
+        className={`ws-docket${isUrgentNew ? ' urgent-card' : ''}${activeId === o.id ? ' sel' : ''}`}
+        onClick={() => openDrawer(o.id)}>
+        <div className="ws-stub">
+          <span className="hole t" />
+          <span className="hole b" />
+          <span className="code">#{o.id}</span>
+        </div>
+        <StatusStamp o={o} />
+        <div className="ws-dbody">
+          <div className="ws-drow1">
+            <span className="ws-dtitle">{o.title}</span>
+            {o.mode === 'color' && <span className="ws-tag color">Colour</span>}
+            {isUrgentNew && (
+              <span className="ws-tag urgent">
+                <Ic name="flame" size={12} /> Rush
+              </span>
+            )}
+          </div>
+          <div className="ws-dwho">for <b>{o.student}</b></div>
+          <div className="ws-dspec">
+            {o.pages}pp <span className="x">·</span> {o.mode === 'color' ? 'Colour' : 'B/W'} <span className="x">·</span> {BIND_LABEL[o.binding]} <span className="x">·</span> ×{o.copies}
+          </div>
+          <div className="ws-dmeta">
+            <span className={`ws-pay ${o.paid ? 'paid' : 'cod'}`}>{o.paid ? 'Paid' : 'Pay on pickup'}</span>
+            <span>{o.status === 'done' ? 'collected' : `waiting ${waited(o)}`}</span>
+            {o.status === 'printing' && <span className="mono" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(o.progress * 100)}%</span>}
+            {o.status === 'ready' && <span className="mono" style={{ fontFamily: 'Space Grotesk' }}>code {o.pickup}</span>}
+          </div>
+        </div>
+        <div className="ws-dact">
+          <span className="ws-price">₹{o.price}</span>
+          <PrimaryAction o={o} />
+        </div>
+      </article>
+    );
+  }
+
+  function StationsPanel() {
+    return (
+      <div className="ws-panel">
+        <h3>Stations</h3>
+        <div className="ws-pbody">
+          {stations.map(s => {
+            const job = s.job ? orders.find(o => o.id === s.job) : null;
+            return (
+              <div key={s.id} className={`ws-station${job ? ' busy' : ''}`}>
+                <div className="ws-st-icon"><Ic name="printer" size={16} /></div>
+                <div className="ws-st-main">
+                  <div className="ws-st-name">{s.name}</div>
+                  {job ? (
+                    <>
+                      <div className="ws-st-job">#{job.id} · {job.title}</div>
+                      <div className="ws-bar"><i style={{ width: `${Math.round(job.progress*100)}%` }} /></div>
+                    </>
+                  ) : (
+                    <div className="ws-st-idle">Idle · {s.sub}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  function StockPanel() {
+    const crit = stock.find(s => s.cls === 'crit');
+    return (
+      <div className="ws-panel">
+        <h3>Stock room</h3>
+        <div className="ws-pbody">
+          {stock.map(s => (
+            <div key={s.nm} className="ws-stock-row">
+              <span className="nm">{s.nm}</span>
+              <div className={`ws-bar ${s.cls}`}><i style={{ width: `${Math.round(s.v*100)}%` }} /></div>
+              <span className="v">{Math.round(s.v*100)}%</span>
+            </div>
+          ))}
+          {crit && (
+            <div className="ws-stock-warn">
+              <Ic name="alert" size={16} />
+              <span><b>{crit.nm}</b> is running low. Colour jobs may stall — reorder before the afternoon rush.</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function QueueView() {
+    const list = orders.filter(o => o.status === vendorTab)
+      .sort((a, b) => (Number(b.urgent) - Number(a.urgent)) || (a.createdAt - b.createdAt));
+    return (
+      <>
+        <div className="ws-stats">
+          <Stat label="In the queue" big={String(counts.new)} color="var(--plum)" trail={counts.new ? `oldest waiting ${waited(orders.filter(o=>o.status==='new').sort((a,b)=>a.createdAt-b.createdAt)[0]||{createdAt:Date.now()} as Order)}` : 'all clear'} />
+          <Stat label="On the presses" big={String(counts.printing)} color="var(--brass)" trail={`${counts.printing} of 3 stations busy`} />
+          <Stat label="Ready for pickup" big={String(counts.ready)} color="var(--sage)" trail={counts.ready ? 'shelf is filling' : 'shelf empty'} />
+          <Stat label="Earned today" big={`₹${earnedToday.toLocaleString('en-IN')}`} color="var(--ink)" trail={`${doneCount} orders handed over`} />
+        </div>
+        <div className="ws-work">
+          <div>
+            <div className="ws-tabs">
+              {(['new','printing','ready','done'] as const).map(k => (
+                <button key={k} className={`ws-tab${vendorTab===k?' on':''}`} onClick={() => setVendorTab(k)}>
+                  {k==='done'?'Picked up':k.charAt(0).toUpperCase()+k.slice(1)}
+                  <span className="pill">{counts[k]}</span>
+                </button>
+              ))}
+            </div>
+            {list.length ? (
+              <div className="ws-queue">{list.map(o => <Docket key={o.id} o={o} />)}</div>
+            ) : (
+              <div className="ws-empty">
+                <Ic name="bench" size={54} />
+                <b>{vendorTab==='new'?'Nothing waiting':vendorTab==='printing'?'No active runs':vendorTab==='ready'?'Shelf is empty':'Nothing collected yet'}</b>
+                {vendorTab==='new'?'New orders land here with a soft chime.':vendorTab==='printing'?'Accept an order to put it on a press.':vendorTab==='ready'?'Finished jobs wait here for pickup.':'Handed-over orders are archived here.'}
+              </div>
+            )}
+          </div>
+          <div className="ws-side">
+            <StationsPanel />
+            <StockPanel />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  function StationsPage() {
+    return (
+      <div className="ws-ledger">
+        <div className="ws-ledger-head"><h3>Presses</h3></div>
+        <div style={{ padding: '6px 17px 14px' }}>
+          {stations.map(s => {
+            const job = s.job ? orders.find(o => o.id === s.job) : null;
+            return (
+              <div key={s.id} className={`ws-station${job?' busy':''}`} style={{ padding: '16px 0' }}>
+                <div className="ws-st-icon" style={{ width: 44, height: 44 }}><Ic name="printer" size={20} /></div>
+                <div className="ws-st-main">
+                  <div className="ws-st-name" style={{ fontSize: 15 }}>{s.name}</div>
+                  {job ? (
+                    <>
+                      <div className="ws-st-job">Running #{job.id} — {job.title} · {job.pages}pp ×{job.copies}</div>
+                      <div className="ws-bar"><i style={{ width: `${Math.round(job.progress*100)}%` }} /></div>
+                    </>
+                  ) : (
+                    <div className="ws-st-idle">Idle and ready · {s.sub}</div>
+                  )}
+                </div>
+                <span className={`ws-badge ${job?'pend':'ok'}`}><span className="d" />{job?'Busy':'Free'}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  function StockPage() {
+    return (
+      <div className="ws-ledger">
+        <div className="ws-ledger-head">
+          <h3>Stock room</h3><div style={{ flex: 1 }} />
+          <button className="ws-btn ghost sm"><Ic name="box" size={15} /> Log a delivery</button>
+        </div>
+        <table className="ws-table">
+          <thead><tr><th>Item</th><th>Level</th><th>Status</th><th /></tr></thead>
+          <tbody>
+            {stock.map(s => (
+              <tr key={s.nm}>
+                <td><b style={{ fontFamily: 'Space Grotesk' }}>{s.nm}</b></td>
+                <td style={{ width: 200 }}><div className={`ws-bar ${s.cls}`} style={{ width: 160 }}><i style={{ width: `${Math.round(s.v*100)}%` }} /></div></td>
+                <td><span className={`ws-badge ${s.cls==='ok'?'ok':s.cls==='low'?'pend':'susp'}`}><span className="d" />{s.cls==='ok'?'Healthy':s.cls==='low'?'Low':'Critical'}</span></td>
+                <td className="ws-rowact"><button className="ws-btn ghost sm">Reorder</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  function EarningsPage() {
+    return (
+      <>
+        <div className="ws-stats">
+          <Stat label="Today" big={`₹${earnedToday.toLocaleString('en-IN')}`} color="var(--sage)" trail={`${doneCount} orders`} />
+          <Stat label="This week" big="₹9,640" color="var(--ink)" trail="+12% vs last" />
+          <Stat label="Platform fee" big="₹964" color="var(--ink-3)" trail="10% commission" />
+          <Stat label="Next payout" big="₹8,676" color="var(--brass)" trail="settles Friday" />
+        </div>
+        <div className="ws-ledger">
+          <div className="ws-ledger-head"><h3>Recent settlements</h3></div>
+          <table className="ws-table">
+            <thead><tr><th>Date</th><th>Orders</th><th>Gross</th><th>Fee</th><th>Net to you</th><th>Status</th></tr></thead>
+            <tbody>
+              {[['Fri 13 Jun','38','₹9,210','₹921','₹8,289'],['Fri 6 Jun','41','₹10,040','₹1,004','₹9,036'],['Fri 30 May','29','₹6,720','₹672','₹6,048']].map(r => (
+                <tr key={r[0]}><td className="mono">{r[0]}</td><td>{r[1]}</td><td className="mono">{r[2]}</td>
+                  <td className="mono" style={{ color: 'var(--ink-3)' }}>{r[3]}</td><td className="mono"><b>{r[4]}</b></td>
+                  <td><span className="ws-badge ok"><span className="d" />Settled</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    );
+  }
+
+  function ReviewsPage() {
+    const revs = [
+      ['Sneha Rao', 5, 'Resume printed in 10 minutes, crisp colour. Lifesaver before the interview.'],
+      ['Rahul Menon', 5, 'Lab record binding was neat. Will come back.'],
+      ['Karthik B', 4, 'Slight wait during the rush but quality was great.'],
+    ];
+    return (
+      <>
+        <div className="ws-stats">
+          <Stat label="Rating" big="4.8" unit="/5" color="var(--brass)" trail="from 214 pickups" />
+          <Stat label="This month" big="46" color="var(--sage)" trail="reviews" />
+          <Stat label="Reply rate" big="92%" color="var(--ink)" trail="keep it up" />
+          <Stat label="Repeat students" big="61%" color="var(--plum)" trail="came back" />
+        </div>
+        <div className="ws-ledger">
+          <div className="ws-ledger-head"><h3>Latest reviews</h3></div>
+          <div style={{ padding: '4px 17px 8px' }}>
+            {revs.map(r => (
+              <div key={r[0] as string} className="ws-tick">
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--plum)', display: 'grid', placeItems: 'center', fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: 12, color: '#fff', flexShrink: 0 }}>
+                  {(r[0] as string).split(' ').map(x => x[0]).join('')}
+                </div>
+                <div className="tk-main">
+                  <b>{r[0]} <span style={{ color: 'var(--brass)' }}>{'★'.repeat(r[1] as number)}</span></b>
+                  <small style={{ fontSize: 13, color: 'var(--ink-2)' }}>{r[2]}</small>
+                </div>
+                <button className="ws-btn ghost sm">Reply</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  function SettingsPage() {
+    return (
+      <div className="ws-two-col">
+        <div>
+          <div className="ws-ledger">
+            <div className="ws-ledger-head"><h3>Hours &amp; status</h3></div>
+            <div style={{ padding: '14px 17px' }}>
+              {[['Accept new orders', true], ['Auto-assign to free press', true], ['Pause colour jobs (ink low)', false]].map(([label, on]) => (
+                <div key={label as string} className="ws-toggle">
+                  <span>{label as string}</span>
+                  <button className={`ws-sw${on ? ' on' : ''}`} onClick={e => (e.currentTarget as HTMLButtonElement).classList.toggle('on')} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="ws-ledger">
+            <div className="ws-ledger-head"><h3>Pricing</h3></div>
+            <table className="ws-table"><tbody>
+              <tr><td>B/W per page</td><td className="ws-rowact"><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹1.20</span></td></tr>
+              <tr><td>Colour per page</td><td className="ws-rowact"><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹5.00</span></td></tr>
+              <tr><td>Spiral binding</td><td className="ws-rowact"><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹35</span></td></tr>
+              <tr><td>Soft binding</td><td className="ws-rowact"><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹80</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div className="ws-owl-card">
+          <div className="ws-label" style={{ color: 'rgba(250,247,241,.55)' }}>Ezi&apos;s note</div>
+          <div className="ws-insight">Your colour ink is at <b>18%</b>. Three colour jobs are queued today — consider pausing colour or reordering so nothing stalls mid-run.</div>
+        </div>
+      </div>
+    );
+  }
+
+  function DrawerContent() {
+    if (!drawerOrder) return null;
+    const o = drawerOrder;
+    const per = o.mode === 'color' ? 5 : 1.2;
+    const bind = { none: 0, staple: 5, spiral: 35, softbound: 80 }[o.binding];
+    const printCost = Math.round(o.pages*per*o.copies);
+    const bindCost = bind * o.copies;
+    const steps = [
+      ['Order placed', true, fmtAgo(o.createdAt)],
+      ['Accepted by shop', o.status !== 'new', o.status !== 'new' ? 'on a press' : ''],
+      ['Printed & finished', o.status === 'ready' || o.status === 'done', (o.status === 'ready' || o.status === 'done') ? 'on the shelf' : ''],
+      ['Handed over', o.status === 'done', o.status === 'done' ? 'collected' : ''],
+    ];
+
+    function Footer() {
+      if (o.status === 'new') return (
+        <>
+          <button className="ws-btn ghost" onClick={() => reject(o.id)}><Ic name="x" size={15} /> Decline</button>
+          <button className={`ws-btn ${o.urgent?'terra':'primary'}`} onClick={() => accept(o.id)}><Ic name="play" size={15} /> Accept &amp; print</button>
+        </>
+      );
+      if (o.status === 'printing') return (
+        <>
+          <button className="ws-btn ghost" onClick={closeDrawer}>Keep printing</button>
+          <button className="ws-btn sage" onClick={() => markReady(o.id)}><Ic name="check" size={15} /> Mark ready</button>
+        </>
+      );
+      if (o.status === 'ready') return (
+        <>
+          <button className="ws-btn ghost" onClick={closeDrawer}>Close</button>
+          <button className="ws-btn brass" onClick={() => {
+            const code = window.prompt(`Ask ${o.student.split(' ')[0]} for their pickup code:\n\n(hint: ${o.pickup})`);
+            if (code !== null) handOver(o.id, code.trim());
+          }}><Ic name="hand" size={15} /> Confirm pickup</button>
+        </>
+      );
+      return <button className="ws-btn ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={closeDrawer}>Close</button>;
+    }
+
+    return (
+      <>
+        <div className="ws-drawer-head">
+          <div>
+            <div className="ws-label">Order #{o.id}</div>
+            <div style={{ fontFamily: 'Space Grotesk', fontSize: 19, fontWeight: 600, letterSpacing: '-.025em', marginTop: 3 }}>{o.title}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 2 }}>for {o.student}</div>
+          </div>
+          <button className="xbtn" onClick={closeDrawer}><Ic name="x" size={17} /></button>
+        </div>
+        <div className="ws-drawer-body">
+          {o.status === 'ready' && (
+            <div className="ws-pickup">
+              <div className="lbl">
+                <div className="ws-label" style={{ color: 'var(--sage)' }}>Pickup code</div>
+                <small style={{ color: 'var(--sage)', fontWeight: 600 }}>read it back from the student</small>
+              </div>
+              <div className="pc">{o.pickup}</div>
+            </div>
+          )}
+          <div className="ws-doc-preview">
+            <div className="ws-doc"><i /><i /><i /><i style={{ width: '80%' }} /><i style={{ width: '65%' }} /></div>
+          </div>
+          <div className="ws-kv">
+            <span className="k">Student</span><span className="v">{o.student}</span>
+            <span className="k">Pages</span><span className="v">{o.pages} pages</span>
+            <span className="k">Colour</span><span className="v">{o.mode === 'color' ? 'Full colour' : 'Black & white'}</span>
+            <span className="k">Binding</span><span className="v" style={{ textTransform: 'capitalize' }}>{BIND_LABEL[o.binding]}</span>
+            <span className="k">Copies</span><span className="v">×{o.copies}</span>
+            <span className="k">Payment</span><span className="v">{o.paid ? 'Paid online' : 'Pay on pickup'}</span>
+          </div>
+          <div className="ws-bill">
+            <div className="ln"><span>Printing ({o.pages}pp {o.mode==='color'?'colour':'b/w'} ×{o.copies})</span><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹{printCost}</span></div>
+            {bindCost > 0 && <div className="ln"><span>Binding</span><span className="mono" style={{ fontFamily: 'Space Grotesk' }}>₹{bindCost}</span></div>}
+            <div className="ln tot"><span>Total</span><span>₹{o.price}</span></div>
+          </div>
+          <div>
+            <div className="ws-label" style={{ marginBottom: 10 }}>Timeline</div>
+            <div className="ws-timeline">
+              {steps.map(([label, done, note]) => (
+                <div key={label as string} className={`ws-tl${done?' done':''}`}>
+                  <span className="dot" />
+                  <div className="ttext">
+                    <b>{label as string}</b>
+                    {note && <small>{note as string}</small>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="ws-drawer-foot"><Footer /></div>
+      </>
+    );
+  }
+
+  function toggleOpen() {
+    setShopOpen(p => {
+      const next = !p;
+      addToast(next ? 'Shop is open — accepting orders' : 'Shop closed — Ezi is resting', next ? 'bench' : 'clock');
+      return next;
+    });
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   if (!mounted) return null;
 
   return (
-    <div className={styles.workshopContainer} style={{ background: isNight ? '#1A1105' : '#3E2A14', transition: 'background 4s ease' }}>
-      
-      {/* Ambient Effects */}
-      {dustParticles.map(p => (
-        <motion.div key={p.id} className={styles.dustParticle} style={{ width: p.size, height: p.size, left: `${p.x}vw`, top: `${p.y}vh` }} animate={{ y: [0, -50, 0], x: [0, Math.random() * 20 - 10, 0], opacity: [0, 0.4, 0] }} transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }} />
-      ))}
-
-      {rainDrops.map(r => (
-        <motion.div key={r.id} className={styles.rainDrop} style={{ left: `${r.x}vw`, top: -50 }} animate={{ y: [0, 1200] }} transition={{ duration: r.duration, delay: r.delay, repeat: Infinity, ease: "linear" }} />
-      ))}
-
-      {/* Background Room Elements */}
-      <div style={{ position: 'absolute', inset: 0, opacity: isClosingTime ? 0.3 : 1, transition: 'opacity 4s ease' }}>
-        
-        {/* Curtains */}
-        <div className={`${styles.curtain} ${styles.curtainLeft}`} />
-        <div className={`${styles.curtain} ${styles.curtainRight}`} />
-
-        {/* Large Window */}
-        <div className={styles.window}>
-          <div className={styles.windowPane} />
-          <div className={styles.windowPane} />
-          <div className={styles.windowPane} />
-        </div>
-
-        {/* Maker Memories (Framed Log) */}
-        <MakerMemories />
-
-        {/* Wall Clock */}
-        <div className={styles.wallClock}>
-          <div className={styles.clockFace}>
-            <motion.div className={`${styles.clockHand} ${styles.hourHand}`} animate={{ rotate: 360 }} transition={{ duration: 43200, repeat: Infinity, ease: 'linear' }} />
-            <motion.div className={`${styles.clockHand} ${styles.minuteHand}`} animate={{ rotate: 360 }} transition={{ duration: 3600, repeat: Infinity, ease: 'linear' }} />
-            <motion.div className={`${styles.clockHand} ${styles.secondHand}`} animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} />
+    <div className="ws-root">
+      <div className="ws-grain" />
+      <div className="ws-app">
+        {/* RAIL */}
+        <aside className="ws-rail">
+          <div className="ws-brand">
+            <div className="ws-seal">E</div>
+            <div><b>EZEE</b><small>Workshop</small></div>
           </div>
-        </div>
 
-        {/* Old Radio */}
-        <div style={{ position: 'absolute', top: '20vh', right: '10vw', width: '120px', height: '80px', background: '#5C3D1D', borderRadius: '8px 8px 0 0', border: '4px solid #36220E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: '80px', height: '40px', background: '#2A1A0B', borderRadius: '4px', position: 'relative', overflow: 'hidden' }}>
-            {Array.from({length: 15}).map((_, i) => (
-              <div key={i} style={{ position: 'absolute', left: `${i * 6}px`, bottom: 0, width: '2px', height: '100%', background: '#111' }} />
+          <div className="ws-ezi-card">
+            <div className="ws-ezi-glow" />
+            <div className="ws-ezi-breathe" dangerouslySetInnerHTML={{ __html: eziSVG(eziMoodState) }} />
+            <div className="ws-ezi-say">{eziSayText}</div>
+          </div>
+
+          <nav className="ws-nav">
+            {navItems.map(([ic, label, key]) => (
+              <button key={key} className={section === key ? 'on' : ''} onClick={() => setSection(key)}>
+                <span className="ic"><Ic name={ic} size={17} /></span>
+                <span>{label}</span>
+                {key === 'queue' && <span className="ws-count">{counts.new}</span>}
+              </button>
             ))}
-          </div>
-          {/* Subtle Music Notes */}
-          {!isClosingTime && Array.from({length: 3}).map((_, i) => (
-            <motion.div key={i} className={styles.musicNote} style={{ left: '50px', top: '0px' }} animate={{ y: [0, -50], x: [0, Math.random() * 40 - 20], opacity: [0, 1, 0] }} transition={{ duration: 4, repeat: Infinity, delay: i * 1.5 }}>
-              ♪
-            </motion.div>
-          ))}
-        </div>
+            <button onClick={() => {
+              document.cookie = "ezee_vendor_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              window.location.href = '/workshop/login';
+            }} style={{ marginTop: '2rem', opacity: 0.6 }}>
+              <span className="ic"><Ic name="x" size={17} /></span>
+              <span>Sign out</span>
+            </button>
+          </nav>
 
-      </div>
-
-      {/* Warm Lamp Glow */}
-      <motion.div
-        animate={{ opacity: isNight ? [0.6, 0.8, 0.6] : 0 }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        style={{ position: 'absolute', bottom: '0', left: '30vw', width: '40vw', height: '50vh', background: 'radial-gradient(ellipse at bottom, rgba(212,175,55,0.2) 0%, transparent 70%)', zIndex: 2, pointerEvents: 'none' }}
-      />
-
-      {/* Main Interactive Zones */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
-        
-        {/* Top Area: Shelf & Printers */}
-        <div style={{ height: '40vh', display: 'flex', justifyContent: 'space-between', padding: '0 5vw', paddingTop: '10vh' }}>
-          <CompletionShelf isClosingTime={isClosingTime} />
-          <Printers isClosingTime={isClosingTime} />
-        </div>
-
-        {/* Bottom Area: Workbench & Ezi & Cat */}
-        <div style={{ height: '60vh', position: 'relative' }}>
-          <Workbench isClosingTime={isClosingTime} />
-          <EziApprentice isClosingTime={isClosingTime} />
-          
-        {/* Sleeping/Waking Cat */}
-        <motion.div 
-          whileHover={{ scale: 1.05 }}
-          style={{ position: 'absolute', bottom: '25vh', left: '15vw', width: '60px', height: '40px', background: isNight ? '#1A1918' : '#D48A4A', borderRadius: '30px 30px 10px 10px', zIndex: 25, display: 'flex', justifyContent: 'center' }}
-        >
-          <div style={{ position: 'absolute', top: '-8px', left: '8px', borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: `12px solid ${isNight ? '#1A1918' : '#D48A4A'}` }} />
-          <div style={{ position: 'absolute', top: '-8px', right: '8px', borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: `12px solid ${isNight ? '#1A1918' : '#D48A4A'}` }} />
-          {isNight ? (
-            <motion.div animate={{ scaleY: [1, 1.05, 1] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', bottom: '0', width: '100%', height: '100%', background: '#1A1918', borderRadius: 'inherit' }}>
-              <span style={{ position: 'absolute', top: '-20px', right: '-10px', fontSize: '0.8rem', color: '#555', fontFamily: 'Space Grotesk' }}>Zzz</span>
-            </motion.div>
-          ) : (
-            <div style={{ position: 'absolute', top: '15px', display: 'flex', gap: '15px' }}>
-              <div style={{ width: '6px', height: '6px', background: '#FFF', borderRadius: '50%' }}><div style={{ width: '2px', height: '4px', background: '#000', margin: '1px auto' }} /></div>
-              <div style={{ width: '6px', height: '6px', background: '#FFF', borderRadius: '50%' }}><div style={{ width: '2px', height: '4px', background: '#000', margin: '1px auto' }} /></div>
+          <div style={{ flex: 1 }} />
+          <div className="ws-rail-foot">
+            <div className="ws-toggle">
+              <span>{shopOpen ? 'Shop open' : 'Shop closed'}</span>
+              <button className={`ws-sw${shopOpen ? ' on' : ''}`} onClick={toggleOpen} />
             </div>
-          )}
-        </motion.div>
-
-        {/* Potted Plant */}
-        <div style={{ position: 'absolute', bottom: '10vh', right: '5vw', zIndex: 15, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {/* Leaves */}
-          <div style={{ position: 'relative', width: '80px', height: '100px' }}>
-            <motion.div animate={{ rotate: [-2, 2, -2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', bottom: 0, left: '20px', width: '30px', height: '60px', background: '#2E4C38', borderRadius: '50% 0 50% 0', transformOrigin: 'bottom left' }} />
-            <motion.div animate={{ rotate: [2, -2, 2] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }} style={{ position: 'absolute', bottom: 0, right: '20px', width: '40px', height: '80px', background: '#3A5C45', borderRadius: '0 50% 0 50%', transformOrigin: 'bottom right' }} />
-            <motion.div animate={{ rotate: [-1, 1, -1] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} style={{ position: 'absolute', bottom: 0, left: '30px', width: '20px', height: '100px', background: '#446E52', borderRadius: '50%', transformOrigin: 'bottom center' }} />
+            <div className="ws-toggle">
+              <span>Ambient sound</span>
+              <button className="ws-sw brass" onClick={e => (e.currentTarget as HTMLButtonElement).classList.toggle('on')} />
+            </div>
           </div>
-          {/* Pot */}
-          <div style={{ width: '50px', height: '40px', background: '#A3603F', borderTop: '5px solid #8A5034', borderRadius: '0 0 10px 10px' }} />
-        </div>
+        </aside>
 
+        {/* MAIN */}
+        <main className="ws-main">
+          <div className="ws-topbar">
+            <div>
+              <h1>{pageTitle}</h1>
+              <div className="ws-sub">{pageSub}</div>
+            </div>
+            <div style={{ flex: 1 }} />
+            <div className="ws-clockchip">
+              <span>{wx}</span>
+              <span className="mono">{clock}</span>
+            </div>
+            <div className={`ws-openchip${shopOpen ? '' : ' closed'}`}>
+              <span className="dot" />
+              <span>{shopOpen ? 'Open' : 'Closed'}</span>
+            </div>
+          </div>
+
+          <div className="ws-canvas">
+            {section === 'queue' && <QueueView />}
+            {section === 'stations' && <StationsPage />}
+            {section === 'stock' && <StockPage />}
+            {section === 'earnings' && <EarningsPage />}
+            {section === 'reviews' && <ReviewsPage />}
+            {section === 'settings' && <SettingsPage />}
+          </div>
+        </main>
       </div>
-    </div>
 
-      {/* Dev Toggle */}
-      <button
-        onClick={toggleClosingTime}
-        style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 100, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#F5EFE7', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontFamily: 'Space Grotesk' }}
-      >
-        {isClosingTime ? 'Wake up Workshop' : 'Simulate Closing Time'}
-      </button>
+      {/* Scrim */}
+      <div className={`ws-scrim${drawerOrder ? ' on' : ''}`} onClick={closeDrawer} />
 
+      {/* Drawer */}
+      <aside className={`ws-drawer${drawerOrder ? ' on' : ''}`}>
+        <DrawerContent />
+      </aside>
+
+      {/* Toasts */}
+      <div className="ws-toasts">
+        {toasts.map(t => <ToastEl key={t.id} t={t} onRemove={removeToast} />)}
+      </div>
     </div>
   );
 }

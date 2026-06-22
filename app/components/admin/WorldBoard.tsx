@@ -132,6 +132,7 @@ export default function WorldBoard() {
         <AnimatePresence>
           {/* Cloud Shadows (Always present but slow moving) */}
           <motion.div
+            key="clouds"
             animate={{ x: ['-20%', '120%'], opacity: [0.1, 0.2, 0.1] }}
             transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
             style={{ position: 'absolute', inset: 0, zIndex: 15, pointerEvents: 'none',
@@ -142,6 +143,7 @@ export default function WorldBoard() {
 
           {hasRain && (
             <motion.div
+              key="rain"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 2 }}
               style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none', background: 'rgba(42, 41, 40, 0.1)' }}
             >
@@ -152,6 +154,7 @@ export default function WorldBoard() {
           )}
           {hasSnow && (
             <motion.div
+              key="snow"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 2 }}
               style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none' }}
             >
@@ -161,6 +164,7 @@ export default function WorldBoard() {
           )}
           {env.festival === 'diwali' && isNight && (
             <motion.div
+              key="diwali"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 2 }}
               style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none' }}
             >

@@ -1,208 +1,646 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import styles from '../../observatory/observatory.module.css';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import WorldBoard from './WorldBoard';
-import OrderDesk from './OrderDesk';
-import VendorWorkshops from './VendorWorkshops';
-import WiseOwl from './WiseOwl';
-import SupportBoard from './SupportBoard';
-import { useObservatoryEnvironment } from './useObservatoryEnvironment';
+/* ───────────────────────────────────────────────
+   EZEE UNIVERSE — Observatory (Admin) Dashboard
+   Ported 1:1 from ezee-workbench-prototype.html
+   Login page is untouched — this is the post-auth view.
+─────────────────────────────────────────────── */
 
-type Zone = 'desk' | 'map' | 'bookshelf';
+// ── Icon helper ───────────────────────────────────────────────────────────────
+const ICONS: Record<string, string> = {
+  globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z',
+  printer: 'M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v8H6z',
+  inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5 5h14l3 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z',
+  card: 'M2 7h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zM2 11h20',
+  ticket: 'M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4zM12 7v10',
+  scroll: 'M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12M16 3h2a2 2 0 0 1 2 2v3M8 7h8M8 11h8M8 15h5',
+  check: 'M20 6L9 17l-5-5',
+  x: 'M18 6L6 18M6 6l12 12',
+  shield: 'M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z',
+  bell: 'M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
+  coin: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+  clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+  alert: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+};
 
+function Ic({ name, size = 18 }: { name: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: 'block', flexShrink: 0 }}>
+      <path d={ICONS[name] || ''} />
+    </svg>
+  );
+}
+
+// ── Owl SVG ───────────────────────────────────────────────────────────────────
+const owlSVG = `<svg viewBox="0 0 100 100" width="96" height="96">
+  <g>
+    <path d="M22 42 Q50 8 78 42 L82 82 Q50 102 18 82 Z" fill="#3D3A38" stroke="#26241f" stroke-width="2"/>
+    <circle cx="38" cy="48" r="13" fill="#FAF7F1"/><circle cx="62" cy="48" r="13" fill="#FAF7F1"/>
+    <circle cx="38" cy="48" r="5" fill="#D4AF37"/><circle cx="62" cy="48" r="5" fill="#D4AF37"/>
+    <path d="M50 56 l-5 6 h10 z" fill="#C2674A"/>
+    <path d="M30 30 l8 10 M70 30 l-8 10" stroke="#26241f" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>`;
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface Toast { id: number; msg: string; icon: string; kind: string; }
+interface AuditEntry { t: string; who: string; what: string; }
+interface VendorState { status: 'ok' | 'pend' | 'susp'; }
+
+// ── Static data ───────────────────────────────────────────────────────────────
+const VENDORS_DATA: [string, string, string, number, string, number, string, string, string, number][] = [
+  ['Campus Central Print', 'Block A · Main gate', 'ok', 4, 'High', 4.8, '₹9,210', 'CC', '#7E8C6F', 1],
+  ['Night Owl Copies', 'Hostel circle', 'ok', 3, 'Med', 4.6, '₹6,040', 'NO', '#7A6D8C', 1],
+  ['The Paper Mill', 'Library basement', 'pend', 2, '—', 0, '—', 'PM', '#B8912E', 0],
+  ['Morning Star Press', 'Admin block', 'ok', 3, 'Low', 4.7, '₹5,120', 'MS', '#C2674A', 1],
+  ['Quill & Quire', 'Near canteen', 'pend', 2, '—', 0, '—', 'QQ', '#7A6D8C', 0],
+];
+
+// ── CSS injection ─────────────────────────────────────────────────────────────
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+.obs-root{
+  --paper:#FAF7F1;--paper-2:#F3EDE3;--paper-3:#EAE2D4;--paper-edge:#E0D6C5;
+  --ink:#2A2928;--ink-2:#6E665B;--ink-3:#9A9183;
+  --terracotta:#C2674A;--terracotta-soft:#D48A70;--plum:#7A6D8C;
+  --sage:#7E8C6F;--sage-soft:#A9B59D;--brass:#B8912E;--brass-soft:#D4AF37;
+  --wood:#4A3219;--wood-deep:#36220E;--crimson:#9B2C2C;
+  --rest:0 1px 0 rgba(255,255,255,.6) inset,0 2px 5px rgba(42,41,40,.06),0 8px 18px rgba(42,41,40,.05);
+  --hover:0 1px 0 rgba(255,255,255,.7) inset,0 4px 10px rgba(42,41,40,.09),0 14px 30px rgba(42,41,40,.08);
+  --press:inset 0 2px 6px rgba(42,41,40,.18);
+  --well:inset 0 2px 5px rgba(42,41,40,.10);
+  --spring:520ms cubic-bezier(.34,1.4,.5,1);--soft:400ms cubic-bezier(.25,1,.5,1);
+  --r:14px;--r-sm:9px;
+  font-family:'Instrument Sans',system-ui,sans-serif;color:var(--ink);
+  background:linear-gradient(180deg,var(--paper) 0%,var(--paper-2) 100%);
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  box-sizing:border-box;
+}
+.obs-root *{box-sizing:border-box;margin:0;padding:0}
+.obs-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.obs-root ::selection{background:var(--terracotta-soft);color:var(--paper)}
+.obs-grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.obs-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+/* rail */
+.obs-rail{position:sticky;top:0;align-self:start;height:100vh;padding:22px 16px;
+  display:flex;flex-direction:column;gap:6px;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,237,227,.35));
+  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px)}
+.obs-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px}
+.obs-seal{width:34px;height:34px;border-radius:10px;flex:none;
+  background:linear-gradient(160deg,var(--ink),#3c3a37);color:var(--paper);
+  display:grid;place-items:center;box-shadow:var(--rest);font-family:'Space Grotesk';font-weight:700;font-size:15px;position:relative}
+.obs-seal::after{content:"";position:absolute;inset:3px;border:1px solid rgba(250,247,241,.18);border-radius:7px}
+.obs-brand b{font-family:'Space Grotesk';letter-spacing:-.02em;font-size:16px}
+.obs-brand small{display:block;font-size:10px;color:var(--ink-3);letter-spacing:.16em;text-transform:uppercase;margin-top:1px}
+.obs-nav{display:flex;flex-direction:column;gap:2px;margin-top:2px}
+.obs-nav button{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;
+  font-size:13.5px;color:var(--ink-2);font-weight:500;transition:background var(--soft),color var(--soft);text-align:left;width:100%}
+.obs-nav button:hover{background:rgba(42,41,40,.045);color:var(--ink)}
+.obs-nav button.on{background:linear-gradient(120deg,rgba(122,109,140,.16),rgba(122,109,140,.07));color:var(--ink);box-shadow:var(--rest)}
+.obs-nav button.on .obs-ic{color:var(--plum)}
+.obs-ic{width:17px;height:17px;flex:none;color:var(--ink-3);transition:color var(--soft)}
+.obs-count{margin-left:auto;font-family:'Space Grotesk';font-size:11px;font-weight:600;min-width:20px;height:20px;padding:0 5px;
+  display:grid;place-items:center;border-radius:6px;background:rgba(42,41,40,.06);color:var(--ink-2)}
+.obs-nav button.on .obs-count{background:var(--plum);color:#fff}
+/* main */
+.obs-main{min-width:0;display:flex;flex-direction:column}
+.obs-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;
+  padding:14px 26px;border-bottom:1px solid var(--paper-edge);
+  background:linear-gradient(180deg,rgba(250,247,241,.92),rgba(250,247,241,.78));backdrop-filter:blur(8px)}
+.obs-topbar h1{font-family:'Space Grotesk';font-size:19px;letter-spacing:-.02em;font-weight:600}
+.obs-sub{font-size:12px;color:var(--ink-3);margin-top:1px}
+.obs-clockchip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  padding:7px 12px;border-radius:10px;background:#fff;box-shadow:var(--rest);border:1px solid var(--paper-edge)}
+.obs-clockchip .mono{font-weight:600;color:var(--ink);font-family:'Space Grotesk'}
+.obs-canvas{padding:22px 26px 60px;max-width:1340px;width:100%}
+/* stats grid */
+.obs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.obs-stat{padding:14px 15px;border-radius:var(--r);background:linear-gradient(165deg,#fffdf8,#f1ebdf);box-shadow:var(--rest);border:1px solid var(--paper-edge);position:relative;overflow:hidden}
+.obs-stat .label{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;font-weight:600;color:var(--ink-3);margin-bottom:7px}
+.obs-stat .big{font-family:'Space Grotesk';font-size:27px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.obs-stat .big small{font-size:14px;color:var(--ink-3);font-weight:500}
+.obs-stat .trail{font-size:11.5px;color:var(--ink-2);margin-top:5px}
+.obs-edge{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px}
+/* layout */
+.obs-two-col{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+/* ledger */
+.obs-ledger{border-radius:var(--r);background:linear-gradient(165deg,#fffdf8,#f1ebdf);box-shadow:var(--rest);border:1px solid var(--paper-edge);overflow:hidden;margin-bottom:18px}
+.obs-ledger-head{padding:14px 17px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--paper-edge)}
+.obs-ledger-head h3{font-family:'Space Grotesk';font-size:15px;font-weight:600;letter-spacing:-.01em}
+/* owl card */
+.obs-owl-card{border-radius:var(--r);background:linear-gradient(165deg,#34322e,#26241f);color:var(--paper);box-shadow:var(--hover);padding:18px;position:relative;overflow:hidden}
+.obs-owl-card .label-dim{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;font-weight:600;color:rgba(250,247,241,.55)}
+.obs-insight{font-size:14px;line-height:1.55;margin-top:8px;color:#efe9df}
+.obs-insight b{color:#fff}
+.obs-owl-svg{position:absolute;right:-6px;bottom:-6px;width:96px;height:96px;opacity:.9}
+/* table */
+table.obs-table{width:100%;border-collapse:collapse;font-size:13.5px}
+table.obs-table thead th{font-family:'Space Grotesk';font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;padding:10px 17px;font-weight:600;border-bottom:1px solid var(--paper-edge)}
+table.obs-table tbody td{padding:13px 17px;border-bottom:1px solid rgba(224,214,197,.55);vertical-align:middle}
+table.obs-table tbody tr{transition:background var(--soft)}
+table.obs-table tbody tr:hover{background:rgba(42,41,40,.025)}
+table.obs-table tbody tr:last-child td{border-bottom:none}
+.obs-cell-name{display:flex;align-items:center;gap:10px}
+.obs-cell-name b{font-family:'Space Grotesk';font-weight:600;font-size:13.5px}
+.obs-cell-name small{display:block;color:var(--ink-3);font-size:11.5px}
+.obs-avatar{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;
+  font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#fff;box-shadow:var(--rest)}
+.obs-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Space Grotesk';font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px}
+.obs-badge .d{width:6px;height:6px;border-radius:50%}
+.obs-badge.ok{background:rgba(126,140,111,.14);color:var(--sage)}.obs-badge.ok .d{background:var(--sage)}
+.obs-badge.pend{background:rgba(184,145,46,.15);color:var(--brass)}.obs-badge.pend .d{background:var(--brass)}
+.obs-badge.susp{background:rgba(155,44,44,.12);color:var(--crimson)}.obs-badge.susp .d{background:var(--crimson)}
+.obs-badge.info{background:rgba(122,109,140,.14);color:var(--plum)}.obs-badge.info .d{background:var(--plum)}
+.obs-rowact{display:flex;gap:7px;justify-content:flex-end}
+/* search */
+.obs-search{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:9px;background:#fff;box-shadow:var(--well);border:1px solid var(--paper-edge);color:var(--ink-3);font-size:12.5px}
+.obs-search input{border:none;background:none;outline:none;font-family:inherit;font-size:13px;color:var(--ink);width:140px}
+/* buttons */
+.obs-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:9px;font-size:13px;font-weight:600;
+  font-family:'Space Grotesk';box-shadow:var(--rest);transition:transform 90ms ease,box-shadow var(--soft),background var(--soft);
+  border:1px solid transparent;white-space:nowrap;cursor:pointer}
+.obs-btn:active{transform:translateY(1px);box-shadow:var(--press)}
+.obs-btn.primary{background:linear-gradient(165deg,#34322e,var(--ink));color:var(--paper)}
+.obs-btn.sage{background:linear-gradient(165deg,#8a9a78,var(--sage));color:#fff}
+.obs-btn.terra{background:linear-gradient(165deg,#d07a5c,var(--terracotta));color:#fff}
+.obs-btn.ghost{background:#fff;color:var(--ink-2);border-color:var(--paper-edge)}
+.obs-btn.ghost:hover{color:var(--ink)}
+.obs-btn.sm{padding:6px 11px;font-size:12px}
+/* chart */
+.obs-spark{display:flex;align-items:flex-end;gap:6px;height:120px}
+.obs-spark i{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--sage-soft),var(--sage));display:block}
+/* tick list (support) */
+.obs-tick{display:flex;gap:11px;padding:11px 0;border-bottom:1px dashed var(--paper-edge);font-size:13px;align-items:center}
+.obs-tick:last-child{border-bottom:none}
+.obs-tick .tk-main{flex:1;min-width:0}.obs-tick .tk-main b{font-weight:600;display:block;font-size:13.5px}
+.obs-tick .tk-main small{color:var(--ink-3);font-size:11.5px}
+.obs-pr{font-family:'Space Grotesk';font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;height:fit-content;text-transform:uppercase;letter-spacing:.08em}
+.obs-pr.high{background:rgba(194,103,74,.14);color:var(--terracotta)}.obs-pr.med{background:rgba(184,145,46,.14);color:var(--brass)}.obs-pr.low{background:rgba(122,109,140,.14);color:var(--plum)}
+/* audit */
+.obs-audit{font-family:'Space Grotesk';font-size:12.5px}
+.obs-audit .a-row{display:flex;gap:12px;padding:9px 0;border-bottom:1px dashed var(--paper-edge);align-items:baseline}
+.obs-audit .a-row:last-child{border-bottom:none}
+.obs-audit .t{color:var(--ink-3);font-size:11px;width:52px;flex:none}
+.obs-audit .who{font-weight:600}.obs-audit .what{color:var(--ink-2);font-weight:400}
+/* mini-spark health */
+.obs-mini-spark{display:flex;align-items:flex-end;gap:2px;height:26px}
+.obs-mini-spark i{width:4px;border-radius:2px;background:var(--sage-soft);display:block}
+/* toasts */
+.obs-toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;gap:8px;align-items:center}
+.obs-toast{display:flex;align-items:center;gap:10px;padding:11px 17px;border-radius:11px;font-size:13.5px;font-weight:500;
+  background:linear-gradient(160deg,#34322e,var(--ink));color:var(--paper);box-shadow:var(--hover);
+  animation:obs-toastin 520ms cubic-bezier(.34,1.4,.5,1) both}
+@keyframes obs-toastin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+`;
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function ToastEl({ t, onRemove }: { t: Toast; onRemove: (id: number) => void }) {
+  useEffect(() => { const id = setTimeout(() => onRemove(t.id), 3200); return () => clearTimeout(id); }, [t.id, onRemove]);
+  return (
+    <div className={`obs-toast ${t.kind}`}>
+      <Ic name={t.icon || 'bell'} size={17} />
+      <span>{t.msg}</span>
+    </div>
+  );
+}
+
+// ── Load Badge helper ─────────────────────────────────────────────────────────
+function LoadBadge({ l }: { l: string }) {
+  if (l === 'High') return <span className="obs-badge pend"><span className="d" />High</span>;
+  if (l === 'Med') return <span className="obs-badge info"><span className="d" />Medium</span>;
+  if (l === 'Low') return <span className="obs-badge ok"><span className="d" />Low</span>;
+  return <span style={{ color: 'var(--ink-3)' }}>—</span>;
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function ObservatoryRoom() {
-  const [activeZone, setActiveZone] = useState<Zone>('map');
+  const [section, setSection] = useState('overview');
+  const [clock, setClock] = useState('—');
+  const [wx, setWx] = useState('☀');
+  const [vendorStates, setVendorStates] = useState<VendorState[]>(() =>
+    VENDORS_DATA.map(v => ({ status: v[2] as 'ok'|'pend'|'susp' }))
+  );
+  const [tickets, setTickets] = useState([
+    ['high', 'Refund not received', 'Faiz Ahmed · order #A23', '2h'],
+    ['med', 'Paper Mill onboarding stuck', 'The Paper Mill', '5h'],
+    ['low', 'Add UPI as payout method', 'Morning Star Press', '1d'],
+  ]);
+  const [audit, setAudit] = useState<AuditEntry[]>([
+    { t: '09:42', who: 'You', what: 'approved vendor — Campus Central Print' },
+    { t: '09:18', who: 'Ops', what: 'issued refund — #A23 (₹95)' },
+    { t: '08:50', who: 'System', what: 'Friday payout batch prepared — ₹61,820' },
+    { t: 'Yesterday', who: 'You', what: 'suspended vendor — Quill & Quire (KYC mismatch)' },
+    { t: 'Yesterday', who: 'Finance', what: 'adjusted commission — Night Owl 10%→9%' },
+  ]);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastCounter = useRef(0);
   const [mounted, setMounted] = useState(false);
-  const { env, setSystemHealth } = useObservatoryEnvironment();
 
+  // Inject CSS once
   useEffect(() => {
     setMounted(true);
+    if (document.getElementById('obs-style')) return;
+    const el = document.createElement('style');
+    el.id = 'obs-style'; el.textContent = CSS;
+    document.head.appendChild(el);
   }, []);
 
-  const isNight = env.timeOfDay === 'night' || env.timeOfDay === 'sunset';
-  const hasRain = env.weather === 'rain';
+  // Clock
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date(), h = d.getHours();
+      setClock(d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }));
+      setWx(h >= 17 || h < 6 ? '🌙' : h >= 15 ? '🌤' : h < 8 ? '🌅' : '☀');
+    };
+    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
+  }, []);
 
-  // Ambient Particles
-  const dustParticles = mounted ? Array.from({ length: 40 }).map((_, i) => ({
-    id: i, x: Math.random() * 100, y: Math.random() * 100,
-    size: Math.random() * 3 + 1, duration: Math.random() * 10 + 10, delay: Math.random() * 5,
-  })) : [];
+  const addToast = useCallback((msg: string, icon: string, kind = '') => {
+    const id = ++toastCounter.current;
+    setToasts(prev => [...prev, { id, msg, icon, kind }]);
+  }, []);
+  const removeToast = useCallback((id: number) => setToasts(prev => prev.filter(t => t.id !== id)), []);
 
-  // Ambient Rain
-  const rainDrops = mounted && hasRain ? Array.from({ length: 150 }).map((_, i) => ({
-    id: `rain-${i}`, x: Math.random() * 100, delay: Math.random() * 2, duration: Math.random() * 0.5 + 0.5,
-  })) : [];
+  function logAudit(what: string, obj: string) {
+    const t = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    setAudit(prev => [{ t, who: 'You', what: `${what} — ${obj}` }, ...prev]);
+  }
 
-  // Birds (only during the day)
-  const birds = mounted && !isNight && env.weather !== 'rain' ? Array.from({ length: 5 }).map((_, i) => ({
-    id: `bird-${i}`, startY: Math.random() * 30 + 10, delay: Math.random() * 20
-  })) : [];
+  function approveVendor(i: number) {
+    setVendorStates(prev => prev.map((s, idx) => idx === i ? { status: 'ok' } : s));
+    addToast(`${VENDORS_DATA[i][0]} approved & live`, 'check', 'good');
+    logAudit('approved vendor', VENDORS_DATA[i][0] as string);
+  }
+  function suspendVendor(i: number) {
+    setVendorStates(prev => prev.map((s, idx) => idx === i ? { status: 'susp' } : s));
+    addToast(`${VENDORS_DATA[i][0]} suspended`, 'shield', 'warn');
+    logAudit('suspended vendor', VENDORS_DATA[i][0] as string);
+  }
+  function resolveTicket(i: number) {
+    const t = tickets[i];
+    addToast(`Resolved: ${t[1]}`, 'check', 'good');
+    logAudit('resolved ticket', t[1]);
+    setTickets(prev => prev.filter((_, idx) => idx !== i));
+  }
 
-  const getZoneTransform = () => {
-    switch (activeZone) {
-      case 'desk': return 'translateX(0)';
-      case 'map': return 'translateX(-100vw)';
-      case 'bookshelf': return 'translateX(-200vw)';
-      default: return 'translateX(-100vw)';
-    }
+  // ── Nav ──────────────────────────────────────────────────────────────────
+  const navItems = [
+    ['globe', 'Overview', 'overview', 0],
+    ['printer', 'Vendors', 'vendors', vendorStates.filter(v => v.status === 'pend').length],
+    ['inbox', 'Orders', 'orders', 0],
+    ['card', 'Payments', 'payments', 0],
+    ['ticket', 'Support', 'support', tickets.length],
+    ['scroll', 'Audit log', 'audit', 0],
+  ];
+
+  const TITLES: Record<string, [string, string]> = {
+    overview: ['The Observatory', 'The whole campus print network, at rest and in motion.'],
+    vendors: ['Vendors', 'Every print shop on the platform — approve, watch, step in.'],
+    orders: ['Orders', 'Every job across every shop. Refund or resolve when needed.'],
+    payments: ['Payments & payouts', 'Commission earned and settlements owed to shops.'],
+    support: ['Support', 'Open tickets from students and vendors.'],
+    audit: ['Audit log', 'Every consequential action, on the record.'],
   };
+  const [pageTitle, pageSub] = TITLES[section] || TITLES.overview;
 
+  // ── Stat card ────────────────────────────────────────────────────────────
+  function Stat({ label, big, unit, color, trail }: { label: string; big: string; unit?: string; color: string; trail: string }) {
+    return (
+      <div className="obs-stat">
+        <div className="obs-edge" style={{ background: color }} />
+        <div className="label">{label}</div>
+        <div className="big">{big}{unit && <small>{unit}</small>}</div>
+        <div className="trail">{trail}</div>
+      </div>
+    );
+  }
+
+  // ── Overview ─────────────────────────────────────────────────────────────
+  function Overview() {
+    const data = [8,14,22,31,28,19,12,24,38,41,33,21,9];
+    const max = Math.max(...data);
+    const activeVendors = vendorStates.filter(v => v.status === 'ok').length;
+    return (
+      <>
+        <div className="obs-grid">
+          <Stat label="Platform revenue" big="₹42,310" unit="today" color="var(--sage)" trail="+8% vs yesterday" />
+          <Stat label="Orders" big="318" unit="today" color="var(--ink)" trail="across 9 shops" />
+          <Stat label="Active students" big="1,204" color="var(--plum)" trail="this week" />
+          <Stat label="Commission earned" big="₹4,231" unit="today" color="var(--brass)" trail="10% of gross" />
+        </div>
+        <div className="obs-two-col">
+          <div className="obs-ledger">
+            <div className="obs-ledger-head">
+              <h3>Orders through the day</h3>
+              <div style={{ flex: 1 }} />
+              <span style={{ fontFamily: 'Space Grotesk', textTransform: 'uppercase', letterSpacing: '.14em', fontSize: 10.5, fontWeight: 600, color: 'var(--ink-3)' }}>live</span>
+            </div>
+            <div style={{ padding: '20px 17px 22px' }}>
+              <div className="obs-spark">
+                {data.map((d, i) => (
+                  <i key={i} style={{ height: `${Math.round(d/max*100)}%`, opacity: 0.5+d/max*0.5 }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: 'Space Grotesk', fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '.14em', fontWeight: 600, color: 'var(--ink-3)' }}>
+                <span>8a</span><span>noon</span><span>4p</span><span>8p</span>
+              </div>
+            </div>
+          </div>
+          <div className="obs-owl-card">
+            <div className="label-dim">The owl notices</div>
+            <div className="obs-insight">
+              <b>The Paper Mill</b> and <b>Quill &amp; Quire</b> are awaiting KYC approval. <b>Night Owl</b> took 41 jobs after 10pm — its colour ink is likely low.
+            </div>
+            <div className="obs-owl-svg" dangerouslySetInnerHTML={{ __html: owlSVG }} />
+          </div>
+        </div>
+        <div className="obs-ledger">
+          <div className="obs-ledger-head"><h3>Platform health</h3></div>
+          <table className="obs-table">
+            <thead><tr><th>Shop</th><th>Presses</th><th>Load</th><th>Rating</th><th>Today</th><th>Status</th></tr></thead>
+            <tbody>
+              {VENDORS_DATA.filter((_, i) => vendorStates[i]?.status === 'ok').map((v, i) => (
+                <tr key={v[0] as string}>
+                  <td><div className="obs-cell-name"><div className="obs-avatar" style={{ background: v[8] as string }}>{v[7]}</div><div><b>{v[0]}</b><small>{v[1]}</small></div></div></td>
+                  <td>{v[3]}</td><td><LoadBadge l={v[4] as string} /></td>
+                  <td className="mono">★ {v[5]}</td><td className="mono">{v[6]}</td>
+                  <td><span className="obs-badge ok"><span className="d" />Healthy</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    );
+  }
+
+  // ── Vendors ───────────────────────────────────────────────────────────────
+  function Vendors() {
+    return (
+      <div className="obs-ledger">
+        <div className="obs-ledger-head">
+          <h3>All vendors</h3><div style={{ flex: 1 }} />
+          <div className="obs-search"><Ic name="printer" size={15} /><input placeholder="Search shops…" /></div>
+        </div>
+        <table className="obs-table">
+          <thead><tr><th>Shop</th><th>KYC</th><th>Presses</th><th>Rating</th><th>Revenue (mo)</th><th /></tr></thead>
+          <tbody>
+            {VENDORS_DATA.map((v, i) => {
+              const st = vendorStates[i]?.status || 'pend';
+              const kyc = st === 'ok'
+                ? <span className="obs-badge ok"><span className="d" />Verified</span>
+                : st === 'susp'
+                ? <span className="obs-badge susp"><span className="d" />Suspended</span>
+                : <span className="obs-badge pend"><span className="d" />Pending</span>;
+              const act = st === 'pend' ? (
+                <>
+                  <button className="obs-btn ghost sm" onClick={() => addToast(`Opening KYC documents for ${v[0]}…`, 'scroll')}>
+                    <Ic name="scroll" size={14} /> Docs
+                  </button>
+                  <button className="obs-btn sage sm" onClick={() => approveVendor(i)}>
+                    <Ic name="check" size={14} /> Approve
+                  </button>
+                </>
+              ) : st === 'ok' ? (
+                <button className="obs-btn ghost sm" onClick={() => suspendVendor(i)}>Suspend</button>
+              ) : (
+                <button className="obs-btn ghost sm" onClick={() => approveVendor(i)}>Reinstate</button>
+              );
+              return (
+                <tr key={v[0] as string}>
+                  <td><div className="obs-cell-name"><div className="obs-avatar" style={{ background: v[8] as string }}>{v[7]}</div><div><b>{v[0]}</b><small>{v[1]}</small></div></div></td>
+                  <td>{kyc}</td><td>{v[3]}</td>
+                  <td className="mono">{v[5] ? `★ ${v[5]}` : '—'}</td>
+                  <td className="mono">{v[6]}</td>
+                  <td className="obs-rowact">{act}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  function Orders() {
+    const sample = [
+      ['#A19','Final Year Thesis','Aisha Khan','Campus Central','₹240','done'],
+      ['#A21','Resume','Sneha Rao','Morning Star','₹60','printing'],
+      ['#A14','Lab Record','Rahul Menon','Night Owl','₹120','done'],
+      ['#A23','Wedding Card','Faiz Ahmed','Campus Central','₹95','dispute'],
+      ['#A09','Project Report','Divya Nair','Night Owl','₹390','done'],
+    ];
+    return (
+      <div className="obs-ledger">
+        <div className="obs-ledger-head">
+          <h3>All orders</h3><div style={{ flex: 1 }} />
+          <div className="obs-search"><Ic name="inbox" size={15} /><input placeholder="Search by code or student…" /></div>
+        </div>
+        <table className="obs-table">
+          <thead><tr><th>Code</th><th>Document</th><th>Student</th><th>Shop</th><th>Amount</th><th>Status</th><th /></tr></thead>
+          <tbody>
+            {sample.map(r => (
+              <tr key={r[0]}>
+                <td className="mono"><b>{r[0]}</b></td>
+                <td>{r[1]}</td><td>{r[2]}</td>
+                <td style={{ color: 'var(--ink-2)' }}>{r[3]}</td>
+                <td className="mono">{r[4]}</td>
+                <td>{r[5]==='done'
+                  ? <span className="obs-badge ok"><span className="d" />Completed</span>
+                  : r[5]==='printing'
+                  ? <span className="obs-badge pend"><span className="d" />Printing</span>
+                  : <span className="obs-badge susp"><span className="d" />Dispute</span>}
+                </td>
+                <td className="obs-rowact">
+                  {r[5] === 'dispute'
+                    ? <button className="obs-btn terra sm" onClick={() => { addToast(`Refund issued to ${r[2]}`, 'coin', 'good'); logAudit('issued refund', r[0]); }}>Refund</button>
+                    : <button className="obs-btn ghost sm">View</button>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // ── Payments ──────────────────────────────────────────────────────────────
+  function Payments() {
+    const rows = [
+      ['Campus Central', '38', '₹9,210', '₹921', '₹8,289'],
+      ['Night Owl', '41', '₹10,040', '₹1,004', '₹9,036'],
+      ['Morning Star', '24', '₹5,120', '₹512', '₹4,608'],
+    ];
+    return (
+      <>
+        <div className="obs-grid">
+          <Stat label="Gross volume" big="₹3.2L" unit="this month" color="var(--ink)" trail="+14%" />
+          <Stat label="Commission" big="₹32,400" unit="this month" color="var(--brass)" trail="10%" />
+          <Stat label="Pending payouts" big="₹61,820" unit="to 7 shops" color="var(--terracotta)" trail="settles Friday" />
+          <Stat label="Refunds" big="₹1,140" unit="this month" color="var(--crimson)" trail="6 orders" />
+        </div>
+        <div className="obs-ledger">
+          <div className="obs-ledger-head">
+            <h3>Payouts due</h3><div style={{ flex: 1 }} />
+            <button className="obs-btn primary sm" onClick={() => { addToast('Batch payout of ₹61,820 scheduled', 'card', 'good'); logAudit('scheduled payouts', '7 shops'); }}>
+              <Ic name="card" size={15} /> Run Friday batch
+            </button>
+          </div>
+          <table className="obs-table">
+            <thead><tr><th>Shop</th><th>Orders</th><th>Gross</th><th>Fee</th><th>Net payout</th><th>Status</th></tr></thead>
+            <tbody>
+              {rows.map(r => (
+                <tr key={r[0]}>
+                  <td><b style={{ fontFamily: 'Space Grotesk' }}>{r[0]}</b></td>
+                  <td>{r[1]}</td><td className="mono">{r[2]}</td>
+                  <td className="mono" style={{ color: 'var(--ink-3)' }}>{r[3]}</td>
+                  <td className="mono"><b>{r[4]}</b></td>
+                  <td><span className="obs-badge pend"><span className="d" />Scheduled</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    );
+  }
+
+  // ── Support ───────────────────────────────────────────────────────────────
+  function Support() {
+    return (
+      <div className="obs-two-col">
+        <div className="obs-ledger">
+          <div className="obs-ledger-head">
+            <h3>Open tickets</h3><div style={{ flex: 1 }} />
+            <span className="obs-badge pend"><span className="d" />{tickets.length} open</span>
+          </div>
+          <div style={{ padding: '4px 17px 8px' }}>
+            {tickets.map((t, i) => (
+              <div key={t[1]} className="obs-tick">
+                <span className={`obs-pr ${t[0]}`}>{t[0]}</span>
+                <div className="tk-main">
+                  <b>{t[1]}</b>
+                  <small>{t[2]} · opened {t[3]} ago</small>
+                </div>
+                <button className="obs-btn sage sm" onClick={() => resolveTicket(i)}>
+                  <Ic name="check" size={14} /> Resolve
+                </button>
+              </div>
+            ))}
+            {tickets.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--ink-3)' }}>
+                <b style={{ fontFamily: 'Space Grotesk', color: 'var(--ink-2)', display: 'block', marginBottom: 4 }}>All clear</b>
+                No open tickets at the moment.
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="obs-ledger">
+          <div className="obs-ledger-head"><h3>Announcements</h3></div>
+          <div style={{ padding: '14px 17px' }}>
+            <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 12 }}>
+              Broadcast to students or vendors — exam-week hours, new shops, maintenance.
+            </div>
+            <button className="obs-btn ghost sm" style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => addToast('Announcement composer coming soon', 'bell')}>
+              <Ic name="bell" size={15} /> Compose announcement
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Audit ─────────────────────────────────────────────────────────────────
+  function AuditLog() {
+    return (
+      <div className="obs-ledger">
+        <div className="obs-ledger-head">
+          <h3>Audit log</h3><div style={{ flex: 1 }} />
+          <span style={{ fontFamily: 'Space Grotesk', textTransform: 'uppercase', letterSpacing: '.14em', fontSize: 10.5, fontWeight: 600, color: 'var(--ink-3)' }}>immutable</span>
+        </div>
+        <div className="obs-audit" style={{ padding: '8px 17px 14px' }}>
+          {audit.map((a, i) => (
+            <div key={i} className="a-row">
+              <span className="t">{a.t}</span>
+              <span className="who">{a.who}</span>
+              <span className="what">{a.what}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   if (!mounted) return null;
 
   return (
-    <div className={styles.observatoryContainer} style={{ background: isNight ? '#1A1918' : '#2A2928', transition: 'background 4s ease' }}>
-      
-      {/* Night Sky / Stars */}
-      <AnimatePresence>
-        {isNight && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 4 }} style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-            {Array.from({ length: 50 }).map((_, i) => (
-              <motion.div key={i} animate={{ opacity: [0.2, 0.8, 0.2] }} transition={{ duration: Math.random() * 4 + 2, repeat: Infinity }} style={{ position: 'absolute', left: `${Math.random() * 100}vw`, top: `${Math.random() * 50}vh`, width: '2px', height: '2px', background: '#FFF', borderRadius: '50%' }} />
+    <div className="obs-root">
+      <div className="obs-grain" />
+      <div className="obs-app">
+        {/* RAIL */}
+        <aside className="obs-rail">
+          <div className="obs-brand">
+            <div className="obs-seal">O</div>
+            <div><b>EZEE</b><small>Observatory</small></div>
+          </div>
+
+          <nav className="obs-nav">
+            {navItems.map(([ic, label, key, badge]) => (
+              <button key={key as string} className={section === key ? 'on' : ''} onClick={() => setSection(key as string)}>
+                <span className="obs-ic"><Ic name={ic as string} size={17} /></span>
+                <span>{label}</span>
+                {(badge as number) > 0 && <span className="obs-count">{badge as number}</span>}
+              </button>
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <button onClick={() => {
+              document.cookie = "ezee_admin_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              window.location.href = '/observatory/login';
+            }} style={{ marginTop: '2rem', opacity: 0.6 }}>
+              <span className="obs-ic"><Ic name="x" size={17} /></span>
+              <span>Sign out</span>
+            </button>
+          </nav>
+        </aside>
 
-      {/* Ambient Effects */}
-      {dustParticles.map(p => (
-        <motion.div key={p.id} className={styles.dustParticle} style={{ width: p.size, height: p.size, left: `${p.x}vw`, top: `${p.y}vh` }} animate={{ y: [0, -50, 0], x: [0, Math.random() * 20 - 10, 0], opacity: [0, 0.5, 0] }} transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }} />
-      ))}
-
-      {rainDrops.map(r => (
-        <motion.div key={r.id} className={styles.rainDrop} style={{ left: `${r.x}vw`, top: -50 }} animate={{ y: [0, 1200] }} transition={{ duration: r.duration, delay: r.delay, repeat: Infinity, ease: "linear" }} />
-      ))}
-
-      {birds.map(b => (
-        <motion.div key={b.id} style={{ position: 'absolute', top: `${b.startY}vh`, left: '-5vw', fontSize: '0.8rem', zIndex: 5 }} animate={{ x: ['-5vw', '105vw'], y: [0, Math.random() * -50 + 20, 0] }} transition={{ duration: 15, delay: b.delay, repeat: Infinity, ease: "linear" }}>
-          v
-        </motion.div>
-      ))}
-
-      {/* Curtains */}
-      <div className={`${styles.curtain} ${styles.curtainLeft}`} />
-      <div className={`${styles.curtain} ${styles.curtainRight}`} />
-
-      {/* Desk Lamp Glow (Ambient) */}
-      <motion.div
-        animate={{ opacity: isNight ? [0.4, 0.6, 0.4] : 0 }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        style={{ position: 'absolute', bottom: 0, left: '20vw', width: '60vw', height: '50vh', background: 'radial-gradient(ellipse at bottom, rgba(212,175,55,0.15) 0%, transparent 70%)', zIndex: 2, pointerEvents: 'none' }}
-      />
-
-      {/* Panning Container */}
-      <div className={styles.zoneContainer} style={{ transform: getZoneTransform() }}>
-        
-        {/* Zone 1: The Desk (Orders & Support) */}
-        <div className={styles.zone} style={{ position: 'relative' }}>
-          <OrderDesk />
-          <div style={{ position: 'absolute', top: '15vh', right: '5vw' }}>
-            <SupportBoard />
-          </div>
-          
-          {/* Coffee Mug & Steam */}
-          <div style={{ position: 'absolute', bottom: '25vh', left: '15vw', width: '40px', height: '50px', background: '#3D3A38', borderRadius: '4px', border: '2px solid #2A2928', zIndex: 25 }}>
-            <motion.div animate={{ y: [-10, -40], opacity: [0, 0.5, 0], x: [0, 10, -10] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', top: '-10px', left: '10px', width: '20px', height: '20px', background: 'rgba(255,255,255,0.2)', filter: 'blur(5px)', borderRadius: '50%' }} />
-          </div>
-
-          {/* Desk Lamp */}
-          <div style={{ position: 'absolute', bottom: '30vh', left: '8vw', width: '80px', height: '20px', background: '#D4AF37', borderRadius: '40px 40px 0 0', zIndex: 25, boxShadow: isNight ? '0 -10px 40px rgba(212,175,55,0.6)' : 'none' }}>
-            <div style={{ position: 'absolute', bottom: '-40px', left: '35px', width: '10px', height: '40px', background: '#5C3D1D' }} />
-          </div>
-        </div>
-
-        {/* Zone 2: The Map / Workshops (World Board) */}
-        <div className={styles.zone} style={{ flexDirection: 'column', gap: '2rem' }}>
-          {/* Large Window Frame wrapping the World Board conceptually */}
-          <div style={{ padding: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '10px solid #36220E', boxShadow: 'inset 0 20px 50px rgba(0,0,0,0.8)' }}>
-            <WorldBoard />
-          </div>
-          <div style={{ transform: 'scale(0.8)', marginTop: '-15vh', zIndex: 10 }}>
-            <VendorWorkshops />
-          </div>
-        </div>
-
-        {/* Zone 3: The Bookshelf (AI / Archives) & Cat & Filing Cabinet */}
-        <div className={styles.zone} style={{ position: 'relative' }}>
-          
-          {/* Filing Cabinet */}
-          <div style={{ position: 'absolute', bottom: '10vh', right: '15vw', width: '120px', height: '180px', background: '#3D3A38', border: '2px solid #2A2928', borderRadius: '4px', zIndex: 5, display: 'flex', flexDirection: 'column', gap: '5px', padding: '10px' }}>
-            <div style={{ width: '100%', height: '50px', background: '#2A2928', borderRadius: '2px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', width: '30px', height: '10px', background: '#D4AF37', borderRadius: '2px' }} />
+        {/* MAIN */}
+        <main className="obs-main">
+          <div className="obs-topbar">
+            <div>
+              <h1>{pageTitle}</h1>
+              <div className="obs-sub">{pageSub}</div>
             </div>
-            <div style={{ width: '100%', height: '50px', background: '#2A2928', borderRadius: '2px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', width: '30px', height: '10px', background: '#D4AF37', borderRadius: '2px' }} />
-            </div>
-            <div style={{ width: '100%', height: '50px', background: '#2A2928', borderRadius: '2px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', width: '30px', height: '10px', background: '#D4AF37', borderRadius: '2px' }} />
-            </div>
-            <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#F5EFE7', padding: '2px 8px', fontSize: '0.6rem', fontFamily: 'Space Grotesk', borderRadius: '2px 2px 0 0', color: '#2A2928' }}>
-              PAST YEARS
+            <div style={{ flex: 1 }} />
+            <div className="obs-clockchip">
+              <span>{wx}</span>
+              <span className="mono">{clock}</span>
             </div>
           </div>
 
-          <WiseOwl />
-          
-          {/* The Cat */}
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            style={{ position: 'absolute', bottom: '10vh', left: '20vw', width: '80px', height: '50px', background: isNight ? '#2A2928' : '#D48A4A', borderRadius: '40px 40px 10px 10px', zIndex: 30, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
-          >
-            {/* Ears */}
-            <div style={{ position: 'absolute', top: '-10px', left: '10px', borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderBottom: `15px solid ${isNight ? '#2A2928' : '#D48A4A'}` }} />
-            <div style={{ position: 'absolute', top: '-10px', right: '10px', borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderBottom: `15px solid ${isNight ? '#2A2928' : '#D48A4A'}` }} />
-            
-            {/* Breathing Animation for Sleeping Cat */}
-            {isNight && (
-              <motion.div animate={{ scaleY: [1, 1.05, 1] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', bottom: '0', width: '100%', height: '100%', background: '#2A2928', borderRadius: 'inherit' }}>
-                <span style={{ position: 'absolute', top: '-20px', right: '-10px', fontSize: '0.8rem', color: '#555', fontFamily: 'Space Grotesk' }}>Zzz</span>
-              </motion.div>
-            )}
-            {!isNight && (
-              <div style={{ position: 'absolute', top: '15px', display: 'flex', gap: '20px' }}>
-                <div style={{ width: '8px', height: '8px', background: '#FFF', borderRadius: '50%' }}><div style={{ width: '2px', height: '6px', background: '#000', margin: '1px auto' }} /></div>
-                <div style={{ width: '8px', height: '8px', background: '#FFF', borderRadius: '50%' }}><div style={{ width: '2px', height: '6px', background: '#000', margin: '1px auto' }} /></div>
-              </div>
-            )}
-          </motion.div>
-        </div>
-
+          <div className="obs-canvas">
+            {section === 'overview' && <Overview />}
+            {section === 'vendors' && <Vendors />}
+            {section === 'orders' && <Orders />}
+            {section === 'payments' && <Payments />}
+            {section === 'support' && <Support />}
+            {section === 'audit' && <AuditLog />}
+          </div>
+        </main>
       </div>
 
-      {/* Navigation UI */}
-      <div className={styles.roomNav}>
-        <button className={`${styles.navButton} ${activeZone === 'desk' ? styles.active : ''}`} onClick={() => setActiveZone('desk')}>
-          The Desk
-        </button>
-        <button className={`${styles.navButton} ${activeZone === 'map' ? styles.active : ''}`} onClick={() => setActiveZone('map')}>
-          World Board
-        </button>
-        <button className={`${styles.navButton} ${activeZone === 'bookshelf' ? styles.active : ''}`} onClick={() => setActiveZone('bookshelf')}>
-          Archives
-        </button>
+      {/* Toasts */}
+      <div className="obs-toasts">
+        {toasts.map(t => <ToastEl key={t.id} t={t} onRemove={removeToast} />)}
       </div>
-
-      {/* Environment Dev Toggle */}
-      <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 100, display: 'flex', gap: '1rem' }}>
-        <button onClick={() => setSystemHealth(env.systemHealth === 'peaceful' ? 'stressed' : 'peaceful')} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontFamily: 'Space Grotesk' }}>
-          Toggle Stress: {env.systemHealth}
-        </button>
-        <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', padding: '0.5rem 1rem', borderRadius: '4px', fontFamily: 'Space Grotesk', fontSize: '0.8rem' }}>
-          Time: {env.timeOfDay} | Season: {env.season}
-        </div>
-      </div>
-
-      {/* Wall Clock */}
-      <div className={styles.wallClock}>
-        <div className={styles.clockFace}>
-          <motion.div className={`${styles.clockHand} ${styles.hourHand}`} animate={{ rotate: 360 }} transition={{ duration: 43200, repeat: Infinity, ease: 'linear' }} />
-          <motion.div className={`${styles.clockHand} ${styles.minuteHand}`} animate={{ rotate: 360 }} transition={{ duration: 3600, repeat: Infinity, ease: 'linear' }} />
-          <motion.div className={`${styles.clockHand} ${styles.secondHand}`} animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} />
-        </div>
-      </div>
-
     </div>
   );
 }

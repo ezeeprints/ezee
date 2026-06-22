@@ -3,12 +3,13 @@ import { Metadata } from 'next';
 import WorkshopRoom from '../components/vendor/WorkshopRoom';
 
 export const metadata: Metadata = {
-  title: 'The Workshop',
+  title: 'The Workshop — EZEE',
+  description: 'Manage your print queue, stations, and earnings.',
 };
 
 export default function VendorPage() {
   return (
-    <main style={{ overflow: 'hidden', width: '100vw', height: '100vh', background: '#2A1A0B' }}>
+    <main>
       <WorkshopRoom />
     </main>
   );
