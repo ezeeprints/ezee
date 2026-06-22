@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from '../../vendor/vendor.module.css';
+import styles from '../../workshop/vendor.module.css';
 
 import { useUniverse } from '../../universe/UniverseProvider';
 import Workbench from '@/app/components/vendor/Workbench';

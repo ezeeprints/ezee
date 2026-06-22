@@ -32,9 +32,9 @@ export function UniverseProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(timer);
   }, []);
 
-  const setUniverseState = (updates: Partial<UniverseState>) => {
+  const setUniverseState = React.useCallback((updates: Partial<UniverseState>) => {
     setState(prev => ({ ...prev, ...updates }));
-  };
+  }, []);
 
   return (
     <UniverseContext.Provider value={{ ...state, setUniverseState }}>

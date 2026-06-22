@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from '../../admin/observatory.module.css';
+import styles from '../../observatory/observatory.module.css';
 
 import WorldBoard from './WorldBoard';
 import OrderDesk from './OrderDesk';
