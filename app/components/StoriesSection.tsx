@@ -120,6 +120,7 @@ export default function StoriesSection() {
       </Reveal>
 
       <div
+        className="mobile-stack mobile-center-items"
         style={{
           maxWidth: 1040,
           margin: "0 auto",

@@ -11,7 +11,7 @@ interface EziProps {
   isNight?: boolean;
 }
 
-export default function EziCharacter({ 
+const EziCharacter = React.memo(function EziCharacter({ 
   state, 
   mousePos = { x: 0, y: 0 }, 
   focusedField = null, 
@@ -243,4 +243,6 @@ export default function EziCharacter({
       </svg>
     </div>
   );
-}
+});
+
+export default EziCharacter;

@@ -368,7 +368,7 @@ export default function PrintDesk({ onClose, isNight = false }: PrintDeskProps) 
           {/* Cloud shadow drifting */}
           <div className={styles.cloudShadow} />
 
-          <div className={styles.deskContent}>
+          <div className={`${styles.deskContent} mobile-stack`}>
 
             {/* LEFT — main interaction area */}
             <div className={styles.deskLeft}>

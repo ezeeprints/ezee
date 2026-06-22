@@ -581,7 +581,31 @@ export default function ObservatoryRoom() {
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="obs-root" style={{ opacity: 0.6, pointerEvents: 'none', animation: 'obs-breathe 2s infinite' }}>
+      <div className="obs-app">
+        <aside className="obs-rail" style={{ padding: '22px 16px' }}>
+          <div style={{ height: 34, width: 120, background: 'rgba(255,255,255,.08)', borderRadius: 10, marginBottom: 20 }} />
+          <div style={{ height: 34, width: '100%', background: 'rgba(255,255,255,.05)', borderRadius: 10, marginBottom: 8 }} />
+          <div style={{ height: 34, width: '100%', background: 'rgba(255,255,255,.05)', borderRadius: 10, marginBottom: 8 }} />
+        </aside>
+        <main className="obs-main">
+          <div className="obs-topbar" style={{ height: 73 }}>
+            <div style={{ height: 24, width: 200, background: 'rgba(255,255,255,.08)', borderRadius: 6 }} />
+          </div>
+          <div className="obs-canvas" style={{ padding: '26px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+              <div style={{ height: 90, background: 'rgba(255,255,255,.05)', borderRadius: 14 }} />
+              <div style={{ height: 90, background: 'rgba(255,255,255,.05)', borderRadius: 14 }} />
+              <div style={{ height: 90, background: 'rgba(255,255,255,.05)', borderRadius: 14 }} />
+              <div style={{ height: 90, background: 'rgba(255,255,255,.05)', borderRadius: 14 }} />
+            </div>
+            <div style={{ height: 400, width: '100%', background: 'rgba(255,255,255,.03)', borderRadius: 14 }} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 
   return (
     <div className="obs-root">

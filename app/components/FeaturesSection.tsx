@@ -47,6 +47,7 @@ export default function FeaturesSection() {
       </Reveal>
 
       <div
+        className="mobile-col-1"
         style={{
           maxWidth: 1080,
           margin: "0 auto",

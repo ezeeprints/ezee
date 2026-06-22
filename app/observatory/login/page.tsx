@@ -84,10 +84,11 @@ export default function ObservatoryLogin() {
   if (!mounted) return null;
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#1A1918' }}>
+    <div className="mobile-stack" style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#1A1918' }}>
       
       {/* LEFT SIDE: The Observatory Scene */}
       <motion.div 
+        className="mobile-hide"
         animate={loginState === 'success' ? { scale: 1.1, x: '-5%' } : { scale: 1, x: 0 }}
         transition={{ duration: 4, ease: 'easeInOut' }}
         style={{ flex: 1, position: 'relative', borderRight: '1px solid #36220E', background: '#201F1E', overflow: 'hidden' }}
@@ -153,6 +154,7 @@ export default function ObservatoryLogin() {
       {/* RIGHT SIDE: The Interface */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF7F1' }}>
         <motion.div 
+          className="mobile-auth-card"
           style={{ 
             width: '500px', 
             padding: '4rem 3rem', 

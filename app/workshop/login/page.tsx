@@ -62,10 +62,10 @@ export default function WorkshopLogin() {
   if (!mounted) return null;
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#3E2A14' }}>
+    <div className="mobile-stack" style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#3E2A14' }}>
       
       {/* LEFT SIDE: The Workshop Scene */}
-      <div style={{ flex: 1, position: 'relative', borderRight: '4px solid #2A1A0B', background: '#2E2218', overflow: 'hidden' }}>
+      <div className="mobile-hide" style={{ flex: 1, position: 'relative', borderRight: '4px solid #2A1A0B', background: '#2E2218', overflow: 'hidden' }}>
         
         {/* Background Window & Rain */}
         <div style={{ position: 'absolute', top: '10%', left: '10%', width: '30%', height: '40%', border: '10px solid #1A1105', background: '#111', overflow: 'hidden' }}>
@@ -149,6 +149,7 @@ export default function WorkshopLogin() {
       {/* RIGHT SIDE: The Interface */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--texture-paper)' }}>
         <motion.div 
+          className="mobile-auth-card"
           animate={loginState === 'error' ? { x: [-5, 5, -5, 5, 0] } : {}}
           transition={{ duration: 0.4 }}
           style={{ 

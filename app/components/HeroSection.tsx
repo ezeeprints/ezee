@@ -8,6 +8,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
+      className="mobile-hero-pad mobile-stack mobile-center-items mobile-text-center"
       style={{
         position: "relative",
         minHeight: "100vh",
@@ -76,9 +77,12 @@ export default function HeroSection() {
       >
         {/* Hero Copy */}
         <Reveal
+          className="mobile-center-items mobile-text-center"
           style={{
             flex: "1 1 420px",
             maxWidth: 560,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {/* Badge */}
@@ -141,6 +145,7 @@ export default function HeroSection() {
           </p>
 
           <div
+            className="mobile-center-items"
             style={{
               display: "flex",
               flexWrap: "wrap",

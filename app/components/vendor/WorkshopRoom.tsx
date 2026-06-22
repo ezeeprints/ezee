@@ -1077,7 +1077,32 @@ export default function WorkshopRoom() {
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="ws-root" style={{ opacity: 0.6, pointerEvents: 'none', animation: 'ws-breathe 2s infinite' }}>
+      <div className="ws-app">
+        <aside className="ws-rail" style={{ padding: '22px 16px' }}>
+          <div style={{ height: 34, width: 120, background: 'rgba(42,41,40,.08)', borderRadius: 10, marginBottom: 20 }} />
+          <div style={{ height: 120, width: '100%', background: 'rgba(42,41,40,.05)', borderRadius: 14, marginBottom: 20 }} />
+          <div style={{ height: 34, width: '100%', background: 'rgba(42,41,40,.05)', borderRadius: 10, marginBottom: 8 }} />
+          <div style={{ height: 34, width: '100%', background: 'rgba(42,41,40,.05)', borderRadius: 10, marginBottom: 8 }} />
+        </aside>
+        <main className="ws-main">
+          <div className="ws-topbar" style={{ height: 73 }}>
+            <div style={{ height: 24, width: 200, background: 'rgba(42,41,40,.08)', borderRadius: 6 }} />
+          </div>
+          <div className="ws-canvas" style={{ padding: '22px 26px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+              <div style={{ height: 80, background: 'rgba(42,41,40,.05)', borderRadius: 14 }} />
+              <div style={{ height: 80, background: 'rgba(42,41,40,.05)', borderRadius: 14 }} />
+              <div style={{ height: 80, background: 'rgba(42,41,40,.05)', borderRadius: 14 }} />
+              <div style={{ height: 80, background: 'rgba(42,41,40,.05)', borderRadius: 14 }} />
+            </div>
+            <div style={{ height: 400, width: '100%', background: 'rgba(42,41,40,.03)', borderRadius: 14 }} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 
   return (
     <div className="ws-root">

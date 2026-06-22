@@ -108,4 +108,121 @@ body {
   .nav-links {
     display: none !important;
   }
+  
+  /* ── 1. General Utilities ── */
+  .mobile-stack {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .mobile-hide {
+    display: none !important;
+  }
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  .mobile-center-items {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .mobile-align-center {
+    align-self: center !important;
+    margin: 0 auto !important;
+  }
+  
+  /* ── 2. Padding/Margin Reductions ── */
+  .mobile-p-sm {
+    padding: 20px 16px !important;
+  }
+  .mobile-p-md {
+    padding: 40px 20px !important;
+  }
+  .mobile-p-lg {
+    padding: 60px 24px !important;
+  }
+  .mobile-gap-sm {
+    gap: 16px !important;
+  }
+  
+  /* ── 3. Grid to Column Overrides ── */
+  .mobile-col-1 {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* ── 4. Typography Tweaks ── */
+  .mobile-text-xl {
+    font-size: clamp(36px, 10vw, 48px) !important;
+  }
+  .mobile-text-lg {
+    font-size: clamp(24px, 8vw, 32px) !important;
+  }
+  
+  /* ── 5. Specific Component Overrides ── */
+  .mobile-auth-card {
+    width: 100% !important;
+    max-width: 90vw !important;
+    padding: 32px 20px !important;
+    margin: 0 auto !important;
+  }
+  .mobile-hero-pad {
+    padding: 100px 20px 60px 20px !important;
+  }
+  
+  /* ── 6. Dashboards Layout ── */
+  .ws-app, .obs-app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .ws-rail, .obs-rail {
+    position: relative;
+    height: auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--paper-edge);
+    padding: 16px;
+    z-index: 40;
+  }
+  .ws-brand {
+    padding-bottom: 8px;
+  }
+  .ws-ezi-card {
+    display: none; /* Hide character on mobile to save space */
+  }
+  .ws-nav, .obs-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ws-nav button, .obs-nav button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .ws-rail-foot {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: none;
+    margin-top: 0;
+    padding-top: 8px;
+  }
+  .ws-queue-grid, .ws-board-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ws-topbar, .obs-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+  .ws-canvas, .obs-canvas {
+    padding: 16px !important;
+  }
+  .ws-stats {
+    grid-template-columns: 1fr 1fr !important; /* 2x2 grid for stats on mobile */
+  }
+  .ws-work {
+    grid-template-columns: 1fr !important;
+  }
 }

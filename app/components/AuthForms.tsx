@@ -55,7 +55,7 @@ export default function AuthForms({ state, setState }: AuthFormsProps) {
 
   return (
     <motion.div 
-      className={styles.paperCard} 
+      className={`${styles.paperCard} mobile-auth-card`}
       style={{ 
         boxShadow: '0 20px 40px rgba(42, 41, 40, 0.08), inset 0 0 0 1px rgba(255,255,255,0.5)',
         background: '#FAF7F1',

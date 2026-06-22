@@ -137,6 +137,7 @@ export default function HowItWorksSection() {
       <div style={{ position: "relative", maxWidth: 1080, margin: "0 auto" }}>
         {/* winding dashed path */}
         <svg
+          className="mobile-hide"
           viewBox="0 0 1080 760"
           preserveAspectRatio="none"
           style={{
@@ -176,6 +177,7 @@ export default function HowItWorksSection() {
             <Reveal
               key={i}
               delay={i * 0.05}
+              className="mobile-align-center"
               style={{
                 alignSelf: i % 2 === 0 ? "flex-start" : "flex-end",
                 maxWidth: 340,
@@ -238,6 +240,7 @@ export default function HowItWorksSection() {
 
         {/* Ezi walking along the path */}
         <div
+          className="mobile-hide"
           style={{
             position: "absolute",
             left: `calc(${eziPos.x}% - 60px)`,
