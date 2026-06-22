@@ -1,36 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="public/favicon.ico" alt="Ezee Logo" width="100"/>
+  <h1>Ezee Universe</h1>
+  <p><i>A beautifully crafted, highly interactive, and fully responsive printing & academic ecosystem.</i></p>
+</div>
 
-## Getting Started
+---
 
-First, run the development server:
+## 🌌 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Ezee** is a meticulously designed web application that transforms the mundane task of printing academic documents into an immersive, cozy, and delightful experience. Built with **Next.js** and **Framer Motion**, Ezee eschews generic UI frameworks in favor of handcrafted SVG illustrations, dynamic vanilla CSS animations, and deep, state-driven interactivity.
+
+The platform is split into three distinct universes:
+1. **The Student Room** (User Portal)
+2. **The Workshop** (Vendor/Print Shop Portal)
+3. **The Observatory** (Admin Dashboard)
+
+---
+
+## ✨ Key Features
+
+### 🎓 1. The Student Room (`/student`)
+A side-scrolling, beautifully illustrated isometric room where students can manage their academic lives.
+- **Print Studio:** Upload, configure, and send documents to local campus print shops.
+- **Memory Library & Scrapbook:** A cozy diary that tracks print history, late-night study sessions, and memories.
+- **Dynamic Weather System:** Change the ambient weather (Sunny, Rainy, Sunset, Midnight) which affects the lighting and mood of the room.
+- **Ezi the Cat:** A hidden interactive easter egg companion that sleeps in different spots around the room based on the time of day.
+- **Ambient Audio Engine:** Lofi beats and environmental soundscapes tied directly to the room's current weather.
+
+### 🖨️ 2. The Workshop (`/vendor`)
+A focused, utilitarian dashboard for print shop owners.
+- **Order Queue Management:** Accept, reject, print, and hand over student documents.
+- **Live Settings:** Adjust pricing (B/W, Colour, Binding types), operating hours, and automatic press assignment.
+- **Inventory Tracking:** Real-time ink level monitoring and alerts.
+
+### 🔭 3. The Observatory (`/admin`)
+A top-level, data-dense control center for platform administrators.
+- **System Map:** View all active vendors, their health status, and live revenue generation.
+- **Global Audit Logs:** Track system-wide events and transactions in real-time.
+- **Incident Management:** Handle high, medium, and low-priority support tickets across the campus network.
+
+---
+
+## 📐 Architecture & Flow
+
+```mermaid
+graph TD
+    %% Core Entities
+    User((Student))
+    Vendor((Print Shop))
+    Admin((System Admin))
+
+    %% Frontends
+    subgraph Ezee Application
+        SR[Student Room UI]
+        WR[Workshop Room UI]
+        OR[Observatory UI]
+    end
+
+    %% State & Logic
+    subgraph Core Systems
+        Mem[Memory & Progress System]
+        Audio[Ambient Audio Engine]
+        OrderSys[Order Queue Engine]
+    end
+
+    %% Connections
+    User -->|Interacts with| SR
+    Vendor -->|Manages| WR
+    Admin -->|Monitors| OR
+
+    SR <-->|Tracks habits| Mem
+    SR -->|Triggers sounds| Audio
+    SR -->|Submits documents| OrderSys
+    
+    OrderSys -->|Routes to| WR
+    WR -->|Updates status| OrderSys
+
+    OrderSys -->|Feeds data to| OR
+    WR -->|Reports health to| OR
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Category | Technology |
+| :--- | :--- |
+| **Framework** | Next.js (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Vanilla CSS Modules (No Tailwind) |
+| **Animation** | Framer Motion & CSS Keyframes |
+| **Graphics** | Inline handcrafted SVGs |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📱 Mobile Responsiveness
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ezee is built to be a **10/10 responsive experience**. 
+While the desktop version utilizes a sweeping 300vw side-scrolling camera for the Student Room, the mobile version intelligently reflows the entire interface into a highly ergonomic, vertically stacked `100vw` / `250vh` layout. 
+All modals, diaries, and data tables automatically snap to scrollable, single-column flex-grids on devices under `820px`, ensuring no content is ever clipped or squished.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Javeria-taj/ezee.git
+   cd ezee
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Explore the Universes:**
+   - Student Portal: `http://localhost:3000/student`
+   - Vendor Portal: `http://localhost:3000/workshop`
+   - Admin Portal: `http://localhost:3000/observatory`
+
+---
+
+## 🎨 Design Philosophy
+Ezee is built on the philosophy that utilitarian software (like printing documents) doesn't have to be sterile. By utilizing warm color palettes (`#FAF7F1` paper tones, `#D48A70` terracotta accents), micro-interactions (like the wiggle of a bookmark or the purr of a cat), and immersive soundscapes, Ezee turns a chore into a comforting ritual.
+
+---
+
+<div align="center">
+  <i>"Not every moment is a milestone. But they add up." — Ezi's Journal</i>
+</div>
