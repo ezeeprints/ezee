@@ -589,9 +589,9 @@ export default function ObservatoryRoom() {
       <div className="obs-app">
         {/* RAIL */}
         <aside className="obs-rail">
-          <div className="obs-brand">
-            <div className="obs-seal">O</div>
-            <div><b>EZEE</b><small>Observatory</small></div>
+          <div className="obs-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+            <div><small>Observatory</small></div>
           </div>
 
           <nav className="obs-nav">

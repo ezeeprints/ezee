@@ -26,6 +26,12 @@ body {
   letter-spacing: -0.03em;
 }
 
+/* Accessibility: Better focus outlines */
+*:focus-visible {
+  outline: 2px solid #D48A70;
+  outline-offset: 2px;
+}
+
 @keyframes riseIn {
   from { opacity: 0.35; transform: translateY(16px); }
   to { opacity: 1; transform: none; }

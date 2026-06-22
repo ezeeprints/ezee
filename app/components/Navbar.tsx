@@ -2,28 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
-const EziLogoSVG = () => (
-  <svg width="20" height="20" viewBox="0 0 140 160">
-    <path
-      d="M70 28 C104 28 116 60 116 94 C116 132 98 152 70 152 C42 152 24 132 24 94 C24 60 36 28 70 28Z"
-      fill="#FAF7F1"
-    />
-    <circle cx="58" cy="92" r="4.4" fill="#2A2928" />
-    <circle cx="82" cy="92" r="4.4" fill="#2A2928" />
-    <path
-      d="M62 104 Q70 110 78 104"
-      stroke="#2A2928"
-      strokeWidth="2.6"
-      fill="none"
-      strokeLinecap="round"
-    />
-    <path
-      d="M40 44 Q70 16 100 44 Q86 51 70 51 Q54 51 40 44Z"
-      fill="#7A6D8C"
-    />
-  </svg>
-);
+
 
 export default function Navbar() {
   useEffect(() => {
@@ -70,37 +51,21 @@ export default function Navbar() {
       }}
     >
       <a
-        href="#hero"
+        href="/"
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 9,
           textDecoration: "none",
-          color: "#2A2928",
+          transition: "transform .3s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(0.98)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "";
         }}
       >
-        <span
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 34,
-            height: 34,
-            borderRadius: 11,
-            background: "#2A2928",
-          }}
-        >
-          <EziLogoSVG />
-        </span>
-        <span
-          style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontWeight: 800,
-            fontSize: 19,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          EZEE
-        </span>
+        <Image src="/logo.png" alt="Ezee Logo" width={100} height={34} style={{ width: "auto", height: 34, objectFit: "contain" }} />
       </a>
 
       <div

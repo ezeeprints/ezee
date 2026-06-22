@@ -1085,9 +1085,9 @@ export default function WorkshopRoom() {
       <div className="ws-app">
         {/* RAIL */}
         <aside className="ws-rail">
-          <div className="ws-brand">
-            <div className="ws-seal">E</div>
-            <div><b>EZEE</b><small>Workshop</small></div>
+          <div className="ws-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+            <div><small>Workshop</small></div>
           </div>
 
           <div className="ws-ezi-card">
