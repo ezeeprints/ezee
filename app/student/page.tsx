@@ -144,6 +144,7 @@ export default function StudentDashboard() {
 
       {cameraFocus !== 'desk' && activeModal === 'none' && (
         <button 
+          className="mobile-hide"
           onClick={() => handleObjectClick('desk', 'none')}
           style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 50, padding: '1rem 2rem', background: '#2A2928', color: '#FAF7F1', border: 'none', borderRadius: '30px', cursor: 'pointer', fontFamily: 'Space Grotesk', fontSize: '1rem', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}
         >

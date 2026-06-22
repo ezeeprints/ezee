@@ -123,6 +123,7 @@ export default function ProgressUI({ onClose }: ProgressUIProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
+        className="mobile-col-1"
         style={{
           background: '#F5EFE7',
           borderRadius: '8px',

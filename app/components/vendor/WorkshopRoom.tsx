@@ -18,6 +18,7 @@ const ICONS: Record<string, string> = {
   stock: 'M3 3h18v4H3zM5 7v14h14V7M9 11h6',
   check: 'M20 6L9 17l-5-5',
   x: 'M18 6L6 18M6 6l12 12',
+  menu: 'M3 12h18M3 6h18M3 18h18',
   bell: 'M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
   hand: 'M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8a8 8 0 0 0 8 8h2a8 8 0 0 0 8-8v-1a2 2 0 0 0-4 0',
@@ -195,12 +196,23 @@ const CSS = `
 .ws-root ::selection{background:var(--terracotta-soft);color:var(--paper)}
 .ws-grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.ws-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.ws-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh;transition:grid-template-columns var(--spring)}
+.ws-app.ws-closed{grid-template-columns:68px 1fr}
 /* rail */
 .ws-rail{position:sticky;top:0;align-self:start;height:100vh;padding:22px 16px;
   display:flex;flex-direction:column;gap:6px;
   background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,237,227,.35));
-  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px)}
+  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px);
+  overflow:hidden;transition:padding var(--spring)}
+.ws-app.ws-closed .ws-rail{padding:22px 10px}
+.ws-app.ws-closed .ws-brand div,
+.ws-app.ws-closed .ws-ezi-card,
+.ws-app.ws-closed .ws-nav span:not(.ic),
+.ws-app.ws-closed .ws-rail .ws-toggle span {
+  display:none;
+}
+.ws-app.ws-closed .ws-brand { justify-content:center !important; }
+.ws-app.ws-closed .ws-nav button { justify-content: center; padding: 12px 0; }
 .ws-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px}
 .ws-seal{width:34px;height:34px;border-radius:10px;flex:none;
   background:linear-gradient(160deg,var(--ink),#3c3a37);color:var(--paper);
@@ -397,6 +409,7 @@ const CSS = `
 .ws-ledger-head{padding:14px 17px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--paper-edge)}
 .ws-ledger-head h3{font-family:'Space Grotesk';font-size:15px;font-weight:600;letter-spacing:-.01em}
 .ws-two-col{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+@media(max-width:820px){.ws-two-col{grid-template-columns:1fr;}}
 .ws-owl-card{border-radius:var(--r);background:linear-gradient(165deg,#34322e,#26241f);color:var(--paper);box-shadow:var(--hover);padding:18px;position:relative;overflow:hidden}
 .ws-owl-card .ws-insight{font-size:14px;line-height:1.55;margin-top:8px;color:#efe9df}
 .ws-label{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;font-weight:600;color:var(--ink-3)}
@@ -446,6 +459,7 @@ export default function WorkshopRoom() {
   const [section, setSection] = useState<string>('queue');
   const [vendorTab, setVendorTab] = useState<string>('new');
   const [shopOpen, setShopOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [drawerOrder, setDrawerOrder] = useState<Order | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -1107,12 +1121,20 @@ export default function WorkshopRoom() {
   return (
     <div className="ws-root">
       <div className="ws-grain" />
-      <div className="ws-app">
+      <div className={`ws-app ${isMenuOpen ? '' : 'ws-closed'}`}>
         {/* RAIL */}
         <aside className="ws-rail">
-          <div className="ws-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-            <div><small>Workshop</small></div>
+          <div className="ws-brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+              <div><small>Workshop</small></div>
+            </div>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              style={{ padding: '4px', cursor: 'pointer', opacity: 0.7 }}
+            >
+              <Ic name={isMenuOpen ? "x" : "menu"} size={22} />
+            </button>
           </div>
 
           <div className="ws-ezi-card">

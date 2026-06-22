@@ -302,6 +302,8 @@ export default function EasterEggUI({ onClose }: EasterEggUIProps) {
           padding: '3rem 2.5rem',
           width: '460px',
           maxWidth: '95vw',
+          maxHeight: '85vh',
+          overflowY: 'auto',
           position: 'relative',
           boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
           textAlign: 'center',

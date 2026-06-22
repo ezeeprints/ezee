@@ -91,6 +91,8 @@ export default function Notifications({ onClose }: NotificationsProps) {
           padding: '3rem 2.5rem',
           width: '680px',
           maxWidth: '95vw',
+          maxHeight: '85vh',
+          overflowY: 'auto',
           position: 'relative',
           boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
           backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.025) 1px, transparent 1.5px)',

@@ -72,7 +72,7 @@ export default function Settings({ onClose }: SettingsProps) {
           {/* Lanyard clip hole */}
           <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', width: '40px', height: '10px', background: '#D2BBA0', borderRadius: '5px', boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3)' }} />
 
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginTop: '1rem' }}>
+          <div className="mobile-col-1" style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginTop: '1rem' }}>
             {/* Photo Silhouette */}
             <div style={{
               width: '90px',
@@ -84,7 +84,8 @@ export default function Settings({ onClose }: SettingsProps) {
               backgroundColor: 'rgba(42, 41, 40, 0.05)',
               fontSize: '2.5rem',
               color: 'rgba(42, 41, 40, 0.3)',
-              borderRadius: '4px'
+              borderRadius: '4px',
+              flexShrink: 0
             }}>
               👩‍💻
             </div>

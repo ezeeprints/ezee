@@ -84,19 +84,22 @@ export default function DeskUI({ onClose }: DeskUIProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
+        className="mobile-col-1"
         style={{
           background: '#F5EFE7',
           borderRadius: '8px',
           width: '780px',
           maxWidth: '95vw',
+          maxHeight: '90vh',
           position: 'relative',
           boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
           overflow: 'hidden',
+          overflowY: 'auto',
           display: 'flex',
         }}
       >
         {/* Journal spine */}
-        <div style={{
+        <div className="mobile-hide" style={{
           width: '18px', flexShrink: 0,
           background: 'linear-gradient(to right, #C4956A, #8B5A2B)',
           boxShadow: 'inset -4px 0 8px rgba(0,0,0,0.2)',
@@ -110,7 +113,6 @@ export default function DeskUI({ onClose }: DeskUIProps) {
           backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, rgba(42,41,40,0.07) 32px)',
           backgroundSize: '100% 32px',
           position: 'relative',
-          borderRight: '1px solid rgba(42,41,40,0.08)',
         }}>
           {/* Red margin line */}
           <div style={{

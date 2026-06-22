@@ -46,6 +46,8 @@ export default function Payments({ onClose }: PaymentsProps) {
       style={{ 
         width: '400px', 
         maxWidth: '90vw', 
+        maxHeight: '85vh',
+        overflowY: 'auto',
         padding: '3rem 2.5rem',
         background: '#FAF7F1',
         boxShadow: '0 20px 40px rgba(42, 41, 40, 0.15)',

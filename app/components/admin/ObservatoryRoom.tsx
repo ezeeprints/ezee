@@ -18,6 +18,7 @@ const ICONS: Record<string, string> = {
   scroll: 'M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12M16 3h2a2 2 0 0 1 2 2v3M8 7h8M8 11h8M8 15h5',
   check: 'M20 6L9 17l-5-5',
   x: 'M18 6L6 18M6 6l12 12',
+  menu: 'M3 12h18M3 6h18M3 18h18',
   shield: 'M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z',
   bell: 'M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
   coin: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
@@ -85,12 +86,21 @@ const CSS = `
 .obs-root ::selection{background:var(--terracotta-soft);color:var(--paper)}
 .obs-grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.obs-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.obs-app{display:grid;grid-template-columns:236px 1fr;min-height:100vh;transition:grid-template-columns var(--spring)}
+.obs-app.obs-closed{grid-template-columns:68px 1fr}
 /* rail */
 .obs-rail{position:sticky;top:0;align-self:start;height:100vh;padding:22px 16px;
   display:flex;flex-direction:column;gap:6px;
   background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,237,227,.35));
-  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px)}
+  border-right:1px solid var(--paper-edge);backdrop-filter:blur(2px);
+  overflow:hidden;transition:padding var(--spring)}
+.obs-app.obs-closed .obs-rail{padding:22px 10px}
+.obs-app.obs-closed .obs-brand div,
+.obs-app.obs-closed .obs-nav span:not(.obs-ic) {
+  display:none;
+}
+.obs-app.obs-closed .obs-brand { justify-content:center !important; }
+.obs-app.obs-closed .obs-nav button { justify-content: center; padding: 12px 0; }
 .obs-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px}
 .obs-seal{width:34px;height:34px;border-radius:10px;flex:none;
   background:linear-gradient(160deg,var(--ink),#3c3a37);color:var(--paper);
@@ -198,6 +208,15 @@ table.obs-table tbody tr:last-child td{border-bottom:none}
   background:linear-gradient(160deg,#34322e,var(--ink));color:var(--paper);box-shadow:var(--hover);
   animation:obs-toastin 520ms cubic-bezier(.34,1.4,.5,1) both}
 @keyframes obs-toastin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Mobile Responsive Overrides */
+@media (max-width: 820px) {
+  .obs-grid { grid-template-columns: 1fr; gap: 16px; }
+  .obs-two-col { grid-template-columns: 1fr; gap: 24px; }
+  .obs-canvas { padding: 16px 12px 60px; }
+  table.obs-table { display: block; overflow-x: auto; white-space: nowrap; }
+  .obs-spark { height: 80px; }
+}
 `;
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -242,6 +261,7 @@ export default function ObservatoryRoom() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastCounter = useRef(0);
   const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Inject CSS once
   useEffect(() => {
@@ -610,12 +630,20 @@ export default function ObservatoryRoom() {
   return (
     <div className="obs-root">
       <div className="obs-grain" />
-      <div className="obs-app">
+      <div className={`obs-app ${isMenuOpen ? '' : 'obs-closed'}`}>
         {/* RAIL */}
         <aside className="obs-rail">
-          <div className="obs-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-            <div><small>Observatory</small></div>
+          <div className="obs-brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <img src="/logo.png" alt="Ezee Logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+              <div><small>Observatory</small></div>
+            </div>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              style={{ padding: '4px', cursor: 'pointer', opacity: 0.7 }}
+            >
+              <Ic name={isMenuOpen ? "x" : "menu"} size={22} />
+            </button>
           </div>
 
           <nav className="obs-nav">

@@ -64,8 +64,8 @@ export default function Reminders({ onClose }: RemindersProps) {
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-    <motion.div style={{
-      width: '720px', maxWidth: '95vw',
+    <motion.div className="mobile-col-1" style={{
+      width: '720px', maxWidth: '95vw', maxHeight: '85vh', overflowY: 'auto',
       borderRadius: '8px', overflow: 'hidden',
       boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
       position: 'relative',

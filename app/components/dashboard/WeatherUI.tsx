@@ -173,6 +173,8 @@ export default function WeatherUI({ onClose, isNight, setRoomWeather }: WeatherU
           padding: '3rem 2.5rem',
           width: '600px',
           maxWidth: '95vw',
+          maxHeight: '85vh',
+          overflowY: 'auto',
           position: 'relative',
           boxShadow: '0 30px 60px rgba(42,41,40,0.18)',
         }}
@@ -199,7 +201,7 @@ export default function WeatherUI({ onClose, isNight, setRoomWeather }: WeatherU
         </div>
 
         {/* Window preset cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div className="mobile-col-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
           {presets.map(preset => {
             const isNightCard = preset.id === 'midnight';
             return (
