@@ -26,6 +26,8 @@ export default function StudentDashboard() {
   const [activeModal, setActiveModal] = useState<ActiveModal>('none');
   const [isNight, setIsNight] = useState(false);
   const [weather, setWeather] = useState<'sunny' | 'rainy' | 'sunset' | 'midnight'>('sunny');
+  const [showMailboxOnboarding, setShowMailboxOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
 
   // Context-aware quiet companionship quotes
   const getQuietQuote = (() => {
@@ -83,6 +85,36 @@ export default function StudentDashboard() {
     // unless explicitly navigating to the desk.
   };
 
+  // Mailbox onboarding steps
+  const mailboxSteps = [
+    {
+      icon: '📬',
+      title: 'Your Notification Mailbox',
+      desc: 'This is where Ezi leaves you little letters — updates, notes, and quiet reminders.',
+    },
+    {
+      icon: '✉️',
+      title: 'Open a Letter',
+      desc: "Tap any sealed envelope to unfold it and read what's inside. Each letter is personal.",
+    },
+    {
+      icon: '🕯️',
+      title: 'Check Back Anytime',
+      desc: 'New letters may arrive as you use the app. Ezi is always watching over things here.',
+    },
+  ];
+
+  const handleMailboxOnboardingNext = () => {
+    if (onboardingStep < mailboxSteps.length - 1) {
+      setOnboardingStep(s => s + 1);
+    } else {
+      // Finish onboarding, open the actual mailbox
+      setShowMailboxOnboarding(false);
+      localStorage.setItem('ezee_mailbox_seen', '1');
+      setTimeout(() => setActiveModal('mailbox'), 200);
+    }
+  };
+
   const containerClass = `${styles.dashboardContainer} ${isNight ? styles.nightMode : ''}`;
 
   return (
@@ -105,7 +137,19 @@ export default function StudentDashboard() {
           toggleNight={() => { audio.playFeedbackClick(); setIsNight(!isNight); }}
           onPrinterClick={() => handleObjectClick('utilities', 'printer')}
           onBookshelfClick={() => handleObjectClick('library', 'bookshelf')}
-          onMailboxClick={() => handleObjectClick('utilities', 'mailbox')}
+          onMailboxClick={() => {
+            audio.playFeedbackClick();
+            setCameraFocus('utilities');
+            setTimeout(() => {
+              const alreadySeen = localStorage.getItem('ezee_mailbox_seen');
+              if (!alreadySeen) {
+                setOnboardingStep(0);
+                setShowMailboxOnboarding(true);
+              } else {
+                setActiveModal('mailbox');
+              }
+            }, 600);
+          }}
           onWalletClick={() => handleObjectClick('desk', 'wallet')}
           onDrawerClick={() => handleObjectClick('desk', 'drawer')}
           onClockClick={() => handleObjectClick('desk', 'clock')}
@@ -245,6 +289,144 @@ export default function StudentDashboard() {
         )}
 
       </div>
+
+      {/* ── MAILBOX FIRST-TIME ONBOARDING OVERLAY ── */}
+      {showMailboxOnboarding && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 200,
+            backdropFilter: 'blur(12px)',
+            background: 'rgba(42, 41, 40, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <motion.div
+            key={onboardingStep}
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.97 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 110 }}
+            style={{
+              background: '#FAF7F1',
+              borderRadius: '6px',
+              padding: '3rem 2.5rem',
+              width: '420px',
+              maxWidth: '92vw',
+              position: 'relative',
+              boxShadow: '0 40px 80px rgba(42,41,40,0.22)',
+              border: '1px solid rgba(42,41,40,0.08)',
+              textAlign: 'center',
+            }}
+          >
+            {/* Washi tape top */}
+            <div style={{
+              position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
+              width: '72px', height: '22px',
+              background: 'rgba(212,138,112,0.38)',
+              borderRadius: '2px',
+            }} />
+
+            {/* Step dots */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '1.8rem' }}>
+              {mailboxSteps.map((_, i) => (
+                <div key={i} style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: i === onboardingStep ? '#D48A70' : 'rgba(42,41,40,0.15)',
+                  transition: 'background 0.3s',
+                }} />
+              ))}
+            </div>
+
+            {/* Icon */}
+            <div style={{ fontSize: '2.8rem', marginBottom: '1rem', lineHeight: 1 }}>
+              {mailboxSteps[onboardingStep].icon}
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+              fontFamily: 'Instrument Sans, sans-serif',
+              fontSize: '1.4rem',
+              color: '#2A2928',
+              margin: '0 0 0.8rem 0',
+              fontWeight: 400,
+            }}>
+              {mailboxSteps[onboardingStep].title}
+            </h3>
+
+            {/* Description */}
+            <p style={{
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontSize: '0.9rem',
+              color: 'rgba(42,41,40,0.6)',
+              lineHeight: 1.65,
+              margin: '0 0 2rem 0',
+            }}>
+              {mailboxSteps[onboardingStep].desc}
+            </p>
+
+            {/* Step counter */}
+            <div style={{
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontSize: '0.72rem',
+              color: 'rgba(42,41,40,0.35)',
+              marginBottom: '1.4rem',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}>
+              Step {onboardingStep + 1} of {mailboxSteps.length}
+            </div>
+
+            {/* Next / Open button */}
+            <button
+              onClick={handleMailboxOnboardingNext}
+              style={{
+                background: '#2A2928',
+                color: '#FAF7F1',
+                border: 'none',
+                borderRadius: '30px',
+                padding: '0.85rem 2.2rem',
+                fontSize: '0.95rem',
+                fontFamily: 'Space Grotesk, sans-serif',
+                cursor: 'pointer',
+                letterSpacing: '0.02em',
+                boxShadow: '0 4px 0 rgba(42,41,40,0.25)',
+                transition: 'transform 0.1s, box-shadow 0.1s',
+              }}
+              onMouseDown={e => (e.currentTarget.style.transform = 'translateY(3px)', e.currentTarget.style.boxShadow = 'none')}
+              onMouseUp={e => (e.currentTarget.style.transform = '', e.currentTarget.style.boxShadow = '0 4px 0 rgba(42,41,40,0.25)')}
+            >
+              {onboardingStep < mailboxSteps.length - 1 ? 'Next →' : 'Open Mailbox ✉️'}
+            </button>
+
+            {/* Skip */}
+            <div style={{ marginTop: '1rem' }}>
+              <button
+                onClick={() => {
+                  setShowMailboxOnboarding(false);
+                  localStorage.setItem('ezee_mailbox_seen', '1');
+                  setTimeout(() => setActiveModal('mailbox'), 200);
+                }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.75rem',
+                  color: 'rgba(42,41,40,0.35)', textDecoration: 'underline',
+                }}
+              >
+                skip intro
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
     </div>
   );
 }

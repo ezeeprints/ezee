@@ -466,6 +466,35 @@ export default function StudentRoom({
       {/* 3. UTILITIES AREA (Right) */}
       <div className={styles.areaUtilities}>
         
+        {/* Mailbox label */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 'calc(20vh + 128px)',
+            left: '10vw',
+            width: '110px',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <span style={{
+            display: 'inline-block',
+            fontFamily: 'Instrument Sans, sans-serif',
+            fontSize: '0.62rem',
+            color: 'rgba(42,41,40,0.55)',
+            background: 'rgba(250,247,241,0.85)',
+            border: '1px dashed rgba(42,41,40,0.18)',
+            borderRadius: '20px',
+            padding: '2px 10px',
+            letterSpacing: '0.04em',
+            backdropFilter: 'blur(2px)',
+          }}>
+            📬 Notification Mailbox
+          </span>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(42,41,40,0.35)', marginTop: '2px' }}>↓</div>
+        </div>
+
         {/* Mailbox (Notifications) */}
         <div 
           className={styles.interactiveObject}
@@ -483,6 +512,36 @@ export default function StudentRoom({
              {/* Flag up (new mail!) */}
              <line x1="90" y1="45" x2="110" y2="10" stroke="#EA4335" strokeWidth="4" strokeLinecap="round" />
           </svg>
+        </div>
+
+        {/* Printer label */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '125px',
+            right: '10vw',
+            width: '200px',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <span style={{
+            display: 'inline-block',
+            fontFamily: 'Instrument Sans, sans-serif',
+            fontSize: '0.65rem',
+            color: 'rgba(42,41,40,0.6)',
+            background: 'rgba(250,247,241,0.9)',
+            border: '1px dashed rgba(42,41,40,0.2)',
+            borderRadius: '20px',
+            padding: '3px 12px',
+            letterSpacing: '0.05em',
+            backdropFilter: 'blur(2px)',
+            boxShadow: '0 2px 8px rgba(42,41,40,0.06)',
+          }}>
+            🖨️ Start Printing Here
+          </span>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(42,41,40,0.35)', marginTop: '2px' }}>↓</div>
         </div>
 
         {/* Printer (Print Studio) */}
