@@ -59,7 +59,7 @@ export function WorkshopSidebar() {
   return (
     <aside className="ws-rail">
       <div className="ws-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Image src="/logo.png" alt="Ezee Logo" width={100} height={34} style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="Ezee Logo" width={100} height={34} style={{ height: 34, width: 'auto', objectFit: 'contain', borderRadius: '22%' }} />
         <div><small>Workshop</small></div>
       </div>
 

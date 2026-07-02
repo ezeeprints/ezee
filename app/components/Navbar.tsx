@@ -65,7 +65,7 @@ export default function Navbar() {
           e.currentTarget.style.transform = "";
         }}
       >
-        <Image src="/logo.png" alt="Ezee Logo" width={100} height={34} style={{ width: "auto", height: 34, objectFit: "contain" }} />
+        <Image src="/logo.png" alt="Ezee Logo" width={100} height={34} style={{ width: "auto", height: 34, objectFit: "contain", borderRadius: "22%" }} />
       </a>
 
       <div
